@@ -1,0 +1,300 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const supabase = require('../config/supabase');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const TOKEN_EXPIRY = '7d'; // 7 days
+
+// Signup endpoint
+router.post('/signup', async (req, res) => {
+  try {
+    const { businessName, ownerName, email, password, phoneNumber, category } = req.body;
+
+    // Validate required fields
+    if (!businessName || !ownerName || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Business name, owner name, email, and password are required'
+      });
+    }
+
+    // Check if email already exists
+    const { data: existingUser } = await supabase
+      .from('merchant_portal_users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email already registered'
+      });
+    }
+
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create merchant portal user (no merchant_id yet - they'll create that in setup)
+    const { data: newUser, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .insert([{
+        email,
+        password_hash: passwordHash,
+        full_name: ownerName,
+        role: 'owner',
+        is_active: true,
+        merchant_id: null // Will be set when they create their loyalty card
+      }])
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('User creation error:', userError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to create account. Please try again.'
+      });
+    }
+
+    // Store business info temporarily (we'll use it during setup)
+    const { error: tempDataError } = await supabase
+      .from('merchant_onboarding_data')
+      .insert([{
+        user_id: newUser.id,
+        business_name: businessName,
+        phone_number: phoneNumber,
+        category: category
+      }]);
+
+    if (tempDataError) {
+      console.error('Temp data error:', tempDataError);
+    }
+
+    res.json({
+      success: true,
+      message: 'Account created successfully'
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Signup failed. Please try again.'
+    });
+  }
+});
+
+// Login endpoint
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log('🔐 Login attempt for:', email);
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email and password are required' 
+      });
+    }
+
+    // Find user by email
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select(`
+        *,
+        merchants!merchant_id (
+          id,
+          name,
+          logo,
+          category,
+          color
+        )
+      `)
+      .eq('email', email)
+      .eq('is_active', true)
+      .single();
+
+    console.log('User found:', user ? 'YES' : 'NO');
+    console.log('User error:', userError?.message || 'NONE');
+
+    if (userError || !user) {
+      console.log('❌ User not found or error');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    // Verify password
+    console.log('Checking password...');
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', validPassword);
+    
+    if (!validPassword) {
+      console.log('❌ Invalid password');
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid email or password' 
+      });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        merchantId: user.merchant_id,
+        email: user.email,
+        role: user.role
+      },
+      JWT_SECRET,
+      { expiresIn: TOKEN_EXPIRY }
+    );
+
+    // Create session in database
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+    const { error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .insert([{
+        user_id: user.id,
+        merchant_id: user.merchant_id,
+        token: token,
+        expires_at: expiresAt.toISOString()
+      }]);
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    }
+
+    // Update last login
+    await supabase
+      .from('merchant_portal_users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', user.id);
+
+    // Return user info and token
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.full_name,
+          role: user.role,
+          merchant: user.merchants
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Login failed. Please try again.' 
+    });
+  }
+});
+
+// Verify token endpoint
+router.get('/verify', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'No token provided' 
+      });
+    }
+
+    // Verify JWT
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Check if session exists and is valid
+    const { data: session, error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .select('*')
+      .eq('token', token)
+      .eq('user_id', decoded.userId)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid or expired session' 
+      });
+    }
+
+    // Get user info
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select(`
+        *,
+        merchants!merchant_id (
+          id,
+          name,
+          logo,
+          category,
+          color
+        )
+      `)
+      .eq('id', decoded.userId)
+      .eq('is_active', true)
+      .single();
+
+    if (userError || !user) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'User not found' 
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.full_name,
+          role: user.role,
+          merchant: user.merchants
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Verify error:', error);
+    res.status(401).json({ 
+      success: false, 
+      error: 'Invalid token' 
+    });
+  }
+});
+
+// Logout endpoint
+router.post('/logout', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (token) {
+      // Delete session from database
+      await supabase
+        .from('merchant_portal_sessions')
+        .delete()
+        .eq('token', token);
+    }
+
+    res.json({ success: true, message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Logout failed' 
+    });
+  }
+});
+
+module.exports = router;
