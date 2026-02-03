@@ -172,6 +172,32 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     
     console.log('✅ New token generated with merchantId:', newMerchant.id);
     
+    // Update session in database with new token
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+    
+    // Delete old sessions for this user
+    await supabase
+      .from('merchant_portal_sessions')
+      .delete()
+      .eq('user_id', userId);
+    
+    // Create new session with updated token
+    const { error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .insert([{
+        user_id: userId,
+        merchant_id: newMerchant.id,
+        token: newToken,
+        expires_at: expiresAt.toISOString()
+      }]);
+    
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    } else {
+      console.log('✅ Session updated in database');
+    }
+    
     res.json({
       success: true,
       data: { 
@@ -197,6 +223,19 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     
     console.log('Creating merchant:', { businessName, category, stampsRequired, rewardDescription, color, logo });
 
+    // Get user's existing merchants to check for common_merchant_id
+    const { data: existingMerchants } = await supabase
+      .from('merchants')
+      .select('common_merchant_id')
+      .eq('created_by', userId)
+      .not('common_merchant_id', 'is', null)
+      .limit(1);
+    
+    // Use existing common_merchant_id or create new one based on user ID
+    const commonMerchantId = existingMerchants?.[0]?.common_merchant_id || `merchant-${userId}`;
+    
+    console.log('Using common_merchant_id:', commonMerchantId);
+
     // Create merchant
     const { data: newMerchant, error: merchantError } = await supabase
       .from('merchants')
@@ -208,7 +247,8 @@ router.post('/create', authenticateMerchant, async (req, res) => {
         reward_description: rewardDescription,
         color: color,
         created_by: userId,
-        is_active: true
+        is_active: true,
+        common_merchant_id: commonMerchantId
       }])
       .select()
       .single();
@@ -256,7 +296,10 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     const { userId } = req.merchant;
     const { merchantId } = req.params;
 
-    console.log(`Setting active merchant ${merchantId} for user ${userId}`);
+    console.log('\n=== SET ACTIVE MERCHANT ===');
+    console.log('User ID:', userId);
+    console.log('Requested merchant ID:', merchantId);
+    console.log('Current merchant ID:', req.merchant.merchantId);
 
     // Verify merchant belongs to user
     const { data: merchant, error: fetchError } = await supabase
@@ -275,26 +318,77 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     }
 
     // Update user's active merchant
-    const { error: updateError } = await supabase
+    console.log('Updating user merchant_id in database...');
+    const { data: updateData, error: updateError } = await supabase
       .from('merchant_portal_users')
       .update({ merchant_id: merchantId })
-      .eq('id', userId);
+      .eq('id', userId)
+      .select();
 
     if (updateError) {
-      console.error('Update error:', updateError);
+      console.error('❌ Update error:', updateError);
       return res.status(500).json({
         success: false,
         error: 'Failed to set active merchant'
       });
     }
 
-    console.log('✅ Active merchant updated');
+    console.log('✅ Database updated:', updateData);
+    console.log('✅ Active merchant changed from', req.merchant.merchantId, 'to', merchantId);
+    
+    // Generate new JWT token with updated merchantId
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    
+    const tokenPayload = { 
+      userId: userId,
+      merchantId: merchantId,
+      email: req.merchant.email,
+      role: req.merchant.role
+    };
+    
+    const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' });
+    
+    console.log('✅ New JWT token generated with payload:', tokenPayload);
+    console.log('Token preview:', newToken.substring(0, 50) + '...');
+    
+    // Update session in database with new token
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+    
+    // Delete old sessions for this user
+    await supabase
+      .from('merchant_portal_sessions')
+      .delete()
+      .eq('user_id', userId);
+    
+    // Create new session with updated token
+    const { error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .insert([{
+        user_id: userId,
+        merchant_id: merchantId,
+        token: newToken,
+        expires_at: expiresAt.toISOString()
+      }]);
+    
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    } else {
+      console.log('✅ Session updated in database');
+    }
+    
+    console.log('=== SET ACTIVE MERCHANT SUCCESS ===\n');
+    
     res.json({
       success: true,
-      data: { merchant }
+      data: { 
+        merchant,
+        token: newToken 
+      }
     });
   } catch (error) {
-    console.error('Set active merchant error:', error);
+    console.error('❌ Set active merchant error:', error);
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to set active merchant'
