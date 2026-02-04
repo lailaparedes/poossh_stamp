@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "dev:backend": "node server.js",
+    "dev:frontend": "cd frontend && npm start",
     "build:frontend": "cd frontend && npm install && npm run build",
-    "build:all": "npm install && npm run build:frontend"
+    "build:all": "npm install && npm run build:frontend",
+    "test:local": "npm run build:frontend && npm start"
   },
   "engines": {
     "node": ">=18.0.0",
