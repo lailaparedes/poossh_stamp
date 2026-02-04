@@ -109,7 +109,8 @@ router.post('/login', async (req, res) => {
           name,
           logo,
           category,
-          color
+          color,
+          qr_code
         )
       `)
       .eq('email', email)
@@ -239,7 +240,8 @@ router.get('/verify', async (req, res) => {
           name,
           logo,
           category,
-          color
+          color,
+          qr_code
         )
       `)
       .eq('id', decoded.userId)

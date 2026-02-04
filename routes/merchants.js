@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const authenticateMerchant = require('../middleware/auth');
+const { generateMerchantQRCode } = require('../utils/qrcode');
 
 // Get all merchants (admin - returns all)
 router.get('/all', async (req, res) => {
@@ -128,6 +129,28 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     }
 
     console.log('✅ Merchant created:', newMerchant.id);
+
+    // Generate QR code for the merchant
+    console.log('Generating QR code for merchant...');
+    const { qrCodeDataUrl, qrCodeId } = await generateMerchantQRCode(newMerchant.id);
+    
+    // Update merchant with QR code and QR code ID
+    const { error: qrUpdateError } = await supabase
+      .from('merchants')
+      .update({ 
+        qr_code: qrCodeDataUrl,
+        qr_code_id: qrCodeId
+      })
+      .eq('id', newMerchant.id);
+    
+    if (qrUpdateError) {
+      console.error('⚠️ QR code update error:', qrUpdateError);
+      // Don't fail the whole request if QR code fails
+    } else {
+      console.log('✅ QR code generated and saved with ID:', qrCodeId);
+      newMerchant.qr_code = qrCodeDataUrl; // Add to response
+      newMerchant.qr_code_id = qrCodeId;
+    }
 
     // Update merchant_portal_users with the new merchant_id
     console.log('Updating user with merchant_id...');
@@ -263,6 +286,27 @@ router.post('/create', authenticateMerchant, async (req, res) => {
 
     console.log('✅ Merchant created:', newMerchant.id);
 
+    // Generate QR code for the merchant
+    console.log('Generating QR code for merchant...');
+    const { qrCodeDataUrl, qrCodeId } = await generateMerchantQRCode(newMerchant.id);
+    
+    // Update merchant with QR code and QR code ID
+    const { error: qrUpdateError } = await supabase
+      .from('merchants')
+      .update({ 
+        qr_code: qrCodeDataUrl,
+        qr_code_id: qrCodeId
+      })
+      .eq('id', newMerchant.id);
+    
+    if (qrUpdateError) {
+      console.error('⚠️ QR code update error:', qrUpdateError);
+    } else {
+      console.log('✅ QR code generated and saved with ID:', qrCodeId);
+      newMerchant.qr_code = qrCodeDataUrl;
+      newMerchant.qr_code_id = qrCodeId;
+    }
+
     // Set as active merchant if user doesn't have one
     const { data: userData } = await supabase
       .from('merchant_portal_users')
@@ -392,6 +436,141 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to set active merchant'
+    });
+  }
+});
+
+// Generate/regenerate QR code for a merchant
+// IMPORTANT: Regenerating invalidates ALL previous QR codes for this merchant
+router.post('/generate-qr/:merchantId', authenticateMerchant, async (req, res) => {
+  try {
+    const { userId } = req.merchant;
+    const { merchantId } = req.params;
+
+    console.log('🔄 Regenerating QR code for merchant:', merchantId);
+
+    // Verify the merchant belongs to this user
+    const { data: merchant, error: fetchError } = await supabase
+      .from('merchants')
+      .select('*')
+      .eq('id', merchantId)
+      .eq('created_by', userId)
+      .single();
+
+    if (fetchError || !merchant) {
+      console.error('❌ Merchant not found:', fetchError);
+      return res.status(404).json({
+        success: false,
+        error: 'Merchant not found or you do not have permission to access it'
+      });
+    }
+
+    // Generate new QR code with unique ID
+    // This invalidates all previous QR codes
+    const { qrCodeDataUrl, qrCodeId } = await generateMerchantQRCode(merchantId);
+    
+    console.log('✅ New QR code generated with ID:', qrCodeId);
+    console.log('⚠️  All previous QR codes are now INVALID');
+    
+    // Update merchant with new QR code and ID
+    const { error: updateError } = await supabase
+      .from('merchants')
+      .update({ 
+        qr_code: qrCodeDataUrl,
+        qr_code_id: qrCodeId
+      })
+      .eq('id', merchantId);
+
+    if (updateError) {
+      console.error('❌ Database update error:', updateError);
+      throw new Error('Failed to save QR code to database');
+    }
+
+    console.log('✅ QR code saved to database');
+
+    res.json({
+      success: true,
+      message: 'QR code regenerated successfully. Previous QR codes are now invalid.',
+      data: { 
+        qr_code: qrCodeDataUrl,
+        qr_code_id: qrCodeId
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error generating QR code:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate QR code. Please try again.'
+    });
+  }
+});
+
+// Validate QR code (for PunchMe app to check if scanned QR code is valid)
+router.post('/validate-qr', async (req, res) => {
+  try {
+    const { merchantId, qrCodeId } = req.body;
+
+    if (!merchantId || !qrCodeId) {
+      return res.status(400).json({
+        success: false,
+        valid: false,
+        error: 'Missing merchantId or qrCodeId'
+      });
+    }
+
+    console.log('🔍 Validating QR code:', { merchantId, qrCodeId });
+
+    // Get merchant and check if QR code ID matches
+    const { data: merchant, error } = await supabase
+      .from('merchants')
+      .select('id, name, qr_code_id, stamps_required, reward_description, color, logo, category')
+      .eq('id', merchantId)
+      .eq('is_active', true)
+      .single();
+
+    if (error || !merchant) {
+      console.log('❌ Merchant not found');
+      return res.json({
+        success: true,
+        valid: false,
+        error: 'Merchant not found or inactive'
+      });
+    }
+
+    // Check if QR code ID matches
+    const isValid = merchant.qr_code_id === qrCodeId;
+
+    if (isValid) {
+      console.log('✅ QR code is VALID');
+      return res.json({
+        success: true,
+        valid: true,
+        merchant: {
+          id: merchant.id,
+          name: merchant.name,
+          logo: merchant.logo,
+          category: merchant.category,
+          stampsRequired: merchant.stamps_required,
+          rewardDescription: merchant.reward_description,
+          color: merchant.color
+        }
+      });
+    } else {
+      console.log('❌ QR code is INVALID - ID mismatch');
+      console.log('Expected:', merchant.qr_code_id);
+      console.log('Received:', qrCodeId);
+      return res.json({
+        success: true,
+        valid: false,
+        error: 'This QR code has been replaced. Please scan the latest QR code from the merchant.'
+      });
+    }
+  } catch (error) {
+    console.error('❌ QR validation error:', error);
+    res.status(500).json({
+      success: false,
+      valid: false,
+      error: 'Failed to validate QR code'
     });
   }
 });
