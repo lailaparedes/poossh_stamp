@@ -2,10 +2,10 @@
   "name": "punchme-merchant-portal",
   "version": "1.0.0",
   "description": "Merchant analytics portal for PunchMe loyalty app",
-  "main": "backend/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js",
+    "start": "node server.js",
+    "dev": "node server.js",
     "build:frontend": "cd frontend && npm install && npm run build",
     "build:backend": "cd backend && npm install",
     "build:all": "npm run build:backend && npm run build:frontend"
