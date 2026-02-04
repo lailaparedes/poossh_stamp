@@ -25,7 +25,8 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve React frontend (production build)
-const frontendBuildPath = path.join(__dirname, '../frontend/build');
+const frontendBuildPath = path.join(__dirname, 'frontend/build');
+console.log('📁 Serving frontend from:', frontendBuildPath);
 app.use(express.static(frontendBuildPath));
 
 // All non-API routes serve the React app
