@@ -99,20 +99,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Find user by email
+    // Find user by email (first get user, then get merchant separately to avoid join issues)
     const { data: user, error: userError } = await supabase
       .from('merchant_portal_users')
-      .select(`
-        *,
-        merchants!merchant_id (
-          id,
-          name,
-          logo,
-          category,
-          color,
-          qr_code
-        )
-      `)
+      .select('*')
       .eq('email', email)
       .eq('is_active', true)
       .single();
@@ -126,6 +116,21 @@ router.post('/login', async (req, res) => {
         success: false, 
         error: 'Invalid email or password' 
       });
+    }
+
+    // Get merchant data if user has a merchant_id
+    if (user.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchants')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', user.merchant_id)
+        .single();
+      
+      user.merchants = merchant;
+      console.log('Merchant loaded:', merchant?.name || 'NO MERCHANT');
+    } else {
+      user.merchants = null;
+      console.log('No merchant for this user yet');
     }
 
     // Verify password
@@ -233,17 +238,7 @@ router.get('/verify', async (req, res) => {
     // Get user info
     const { data: user, error: userError } = await supabase
       .from('merchant_portal_users')
-      .select(`
-        *,
-        merchants!merchant_id (
-          id,
-          name,
-          logo,
-          category,
-          color,
-          qr_code
-        )
-      `)
+      .select('*')
       .eq('id', decoded.userId)
       .eq('is_active', true)
       .single();
@@ -253,6 +248,19 @@ router.get('/verify', async (req, res) => {
         success: false, 
         error: 'User not found' 
       });
+    }
+
+    // Get merchant data if user has a merchant_id
+    if (user.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchants')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', user.merchant_id)
+        .single();
+      
+      user.merchants = merchant;
+    } else {
+      user.merchants = null;
     }
 
     res.json({
