@@ -77,8 +77,22 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
 
     if (error) throw error;
 
-    // Group by date
+    // Create all dates in the range
+    const endDate = new Date();
+    endDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    startDate.setHours(0, 0, 0, 0);
     const cardsByDate = {};
+    
+    // Initialize all dates with 0
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      cardsByDate[dateStr] = 0;
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Fill in actual data
     if (data && data.length > 0) {
       data.forEach(card => {
         const date = new Date(card.created_at).toISOString().split('T')[0];
@@ -86,11 +100,13 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
       });
     }
 
-    // Convert to array format for charts
-    const chartData = Object.entries(cardsByDate).map(([date, count]) => ({
-      date,
-      count
-    }));
+    // Convert to array format for charts, sorted by date
+    const chartData = Object.entries(cardsByDate)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, count]) => ({
+        date,
+        count
+      }));
 
     res.json({ success: true, data: chartData });
   } catch (error) {
@@ -117,8 +133,22 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
 
     if (error) throw error;
 
-    // Group by date and sum stamps
+    // Create all dates in the range
+    const endDate = new Date();
+    endDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    startDate.setHours(0, 0, 0, 0);
     const stampsByDate = {};
+    
+    // Initialize all dates with 0
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      stampsByDate[dateStr] = 0;
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // Fill in actual data
     if (data && data.length > 0) {
       data.forEach(stamp => {
         const date = new Date(stamp.created_at).toISOString().split('T')[0];
@@ -126,11 +156,13 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
       });
     }
 
-    // Convert to array format for charts
-    const chartData = Object.entries(stampsByDate).map(([date, stamps]) => ({
-      date,
-      stamps
-    }));
+    // Convert to array format for charts, sorted by date
+    const chartData = Object.entries(stampsByDate)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, stamps]) => ({
+        date,
+        stamps
+      }));
 
     res.json({ success: true, data: chartData });
   } catch (error) {
