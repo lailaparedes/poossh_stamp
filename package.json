@@ -7,12 +7,21 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build:frontend": "cd frontend && npm install && npm run build",
-    "build:backend": "cd backend && npm install",
-    "build:all": "npm run build:backend && npm run build:frontend"
+    "build:all": "npm install && npm run build:frontend"
   },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "qrcode": "^1.5.4"
   },
   "keywords": [
     "loyalty",
