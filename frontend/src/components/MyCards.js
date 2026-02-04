@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import Sidebar from './Sidebar';
 import './MyCards.css';
 
 function MyCards() {
@@ -150,15 +151,22 @@ function MyCards() {
 
   if (loading && merchants.length === 0) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading your loyalty cards...</p>
-      </div>
+      <>
+        <Sidebar />
+        <div className="my-cards-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading your loyalty cards...</p>
+          </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="my-cards">
+    <div className="my-cards-container">
+      <Sidebar />
+      
       {successMessage && (
         <div className="success-notification">
           <span className="success-icon">✓</span>
@@ -173,34 +181,34 @@ function MyCards() {
         </div>
       )}
 
-      <div className="cards-header">
-        <div>
-          <h1>My Loyalty Cards</h1>
-          <p>Manage all your loyalty stamp card programs</p>
+      <div className="my-cards-content">
+        <div className="my-cards-header">
+          <div className="my-cards-header-info">
+            <h1>My Loyalty Cards</h1>
+            <p>Manage all your loyalty stamp card programs</p>
+          </div>
+          <div className="my-cards-header-actions">
+            <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
+              Dashboard
+            </button>
+            <button className="btn-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
         </div>
-        <div className="header-buttons">
-          <button className="btn-secondary" onClick={() => navigate('/dashboard')}>
-            Dashboard
-          </button>
-          <button className="btn-logout" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </div>
 
-      <div className="cards-actions">
         <button 
-          className="btn-create" 
+          className="create-card-button" 
           onClick={() => setShowCreateForm(!showCreateForm)}
         >
           {showCreateForm ? '✕ Cancel' : '+ Create New Card'}
         </button>
-      </div>
 
-      {showCreateForm && (
-        <div className="create-card-form">
-          <h2>Create New Loyalty Card</h2>
-          <form onSubmit={handleCreateCard}>
+        {showCreateForm && (
+          <div className="create-form">
+            <h3>Create New Loyalty Card</h3>
+            <form onSubmit={handleCreateCard}>
+              <div className="form-grid">
             <div className="form-group">
               <label>Business Name *</label>
               <input
@@ -280,72 +288,87 @@ function MyCards() {
               </div>
             </div>
 
-            <div className="form-actions">
-              <button type="button" className="btn-cancel" onClick={() => setShowCreateForm(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="btn-submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Card'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <div className="cards-grid">
-        {merchants.length === 0 ? (
-          <div className="empty-state">
-            <p>You haven't created any loyalty cards yet.</p>
-            <button className="btn-create" onClick={() => setShowCreateForm(true)}>
-              Create Your First Card
-            </button>
-          </div>
-        ) : (
-          merchants.map(merchant => (
-            <div 
-              key={merchant.id} 
-              className={`card-item ${user?.merchant?.id === merchant.id ? 'active' : ''}`}
-              style={{ borderLeftColor: merchant.color }}
-            >
-              <div className="card-logo" style={{ backgroundColor: merchant.color }}>
-                {merchant.logo && !merchant.logo.includes('http') ? merchant.logo : '🏪'}
               </div>
-              <div className="card-content">
-                <h3>{merchant.name}</h3>
-                <p className="card-category">{merchant.category}</p>
-                <p className="card-details">
-                  {merchant.stamps_required} stamps → {merchant.reward_description}
-                </p>
+              <div className="form-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowCreateForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Card'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        <div className="cards-grid">
+          {merchants.length === 0 ? (
+            <div className="no-cards">
+              <div className="no-cards-icon">🎴</div>
+              <h3>No Loyalty Cards Yet</h3>
+              <p>Create your first loyalty stamp card to get started</p>
+            </div>
+          ) : (
+            merchants.map(merchant => (
+              <div 
+                key={merchant.id} 
+                className={`loyalty-card ${user?.merchant?.id === merchant.id ? 'active' : ''}`}
+              >
                 {user?.merchant?.id === merchant.id && (
                   <span className="active-badge">Active</span>
                 )}
-              </div>
-              <div className="card-actions">
-                {user?.merchant?.id !== merchant.id && (
+                
+                <div className="card-header">
+                  <div className="card-logo">
+                    {merchant.logo && !merchant.logo.includes('http') ? merchant.logo : '🏪'}
+                  </div>
+                  <div className="card-info">
+                    <h3>{merchant.name}</h3>
+                    <p className="card-category">{merchant.category}</p>
+                  </div>
+                </div>
+
+                <div className="card-details">
+                  <div className="card-stamps">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                    <span>{merchant.stamps_required} stamps</span>
+                  </div>
+                  <div className="card-reward">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 6L13.5 9L17 9.5L14.5 12L15 15.5L12 13.5L9 15.5L9.5 12L7 9.5L10.5 9L12 6Z"/>
+                    </svg>
+                    <span>{merchant.reward_description}</span>
+                  </div>
+                </div>
+
+                <div className="card-actions">
                   <button
-                    className="btn-small btn-primary"
+                    className="btn-view-dashboard"
                     onClick={() => handleSetActive(merchant.id)}
                   >
-                    Set Active
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View Dashboard
                   </button>
-                )}
-                <button
-                  className="btn-small btn-view"
-                  onClick={() => handleSetActive(merchant.id)}
-                >
-                  View Dashboard
-                </button>
-                <button
-                  className="btn-small btn-danger"
-                  onClick={() => handleDeleteCard(merchant.id)}
-                  disabled={deletingId === merchant.id}
-                >
-                  {deletingId === merchant.id ? 'Deleting...' : 'Delete'}
-                </button>
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDeleteCard(merchant.id)}
+                    disabled={deletingId === merchant.id}
+                    title="Delete card"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        )}
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

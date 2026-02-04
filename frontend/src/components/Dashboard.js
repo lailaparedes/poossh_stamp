@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Sidebar from './Sidebar';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -151,33 +152,29 @@ function Dashboard() {
   // Show empty state if no merchant yet
   if (!user?.merchant) {
     return (
-      <div className="dashboard">
-        <div className="dashboard-header">
-          <div className="header-content">
-            <h2>Welcome to PunchMe Merchant Portal</h2>
+      <>
+        <Sidebar />
+        <div className="dashboard-content">
+          <div className="empty-state">
+            <div className="empty-state-icon">🚀</div>
+            <h2>Let's Get Started!</h2>
+            <p>Create your loyalty stamp card to start engaging with customers</p>
+            <button 
+              className="primary-button" 
+              onClick={() => navigate('/setup')}
+            >
+              Create My Loyalty Card
+            </button>
           </div>
-          <button className="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
         </div>
-        
-        <div className="empty-state">
-          <div className="empty-state-icon">🚀</div>
-          <h2>Let's Get Started!</h2>
-          <p>Create your loyalty stamp card to start engaging with customers</p>
-          <button 
-            className="primary-button" 
-            onClick={() => navigate('/setup')}
-          >
-            Create My Loyalty Card
-          </button>
-        </div>
-      </div>
+      </>
     );
   }
 
   return (
     <div className="dashboard">
+      <Sidebar />
+      
       {/* Notification Toast */}
       {notification && (
         <div className={`notification-toast notification-${notification.type}`}>
@@ -199,79 +196,78 @@ function Dashboard() {
         </div>
       )}
 
-      <div className="dashboard-header">
-        <div className="header-content">
-          {user?.merchant?.logo && (
-            <div className="header-logo">
-              <img src={user.merchant.logo} alt={user.merchant.name} />
+      <div className="dashboard-content">
+        <div className="dashboard-header">
+          <div className="header-merchant">
+            <div className="merchant-avatar">
+              {user?.merchant?.logo || '🏪'}
             </div>
-          )}
-          <div>
-            <h2>{user?.merchant?.name}</h2>
-            <p className="merchant-category">{user?.merchant?.category}</p>
+            <div className="merchant-info">
+              <h2>{user?.merchant?.name}</h2>
+              <p>{user?.merchant?.category}</p>
+            </div>
+          </div>
+          <div className="header-actions">
+            <button className="btn-secondary" onClick={() => navigate('/my-cards')}>
+              🎴 My Cards
+            </button>
+            <button className="logout-button" onClick={handleLogout}>
+              Logout
+            </button>
           </div>
         </div>
-        <div className="header-actions">
-          <button className="my-cards-button" onClick={() => navigate('/my-cards')}>
-            🎴 My Cards
-          </button>
-          <button className="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
-      </div>
 
-      {dashboardData && (
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#667eea' }}>
-              <span>📇</span>
+        {dashboardData && (
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-icon active">
+                <span>📇</span>
+              </div>
+              <div className="stat-content">
+                <h3>Active Cards</h3>
+                <p className="stat-value">{dashboardData.activeCards}</p>
+                <p className="stat-label">Current active stamp cards</p>
+              </div>
             </div>
-            <div className="stat-content">
-              <h3>Active Cards</h3>
-              <p className="stat-value">{dashboardData.activeCards}</p>
-              <p className="stat-label">Current active stamp cards</p>
+
+            <div className="stat-card">
+              <div className="stat-icon rewards">
+                <span>🎁</span>
+              </div>
+              <div className="stat-content">
+                <h3>Total Rewards</h3>
+                <p className="stat-value">{dashboardData.totalRewards}</p>
+                <p className="stat-label">Rewards earned by customers</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon redeemed">
+                <span>✓</span>
+              </div>
+              <div className="stat-content">
+                <h3>Redeemed</h3>
+                <p className="stat-value">{dashboardData.redeemedRewards}</p>
+                <p className="stat-label">
+                  {dashboardData.totalRewards > 0 
+                    ? `${Math.round((dashboardData.redeemedRewards / dashboardData.totalRewards) * 100)}% redemption rate`
+                    : 'No rewards yet'}
+                </p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-icon pending">
+                <span>⏳</span>
+              </div>
+              <div className="stat-content">
+                <h3>Pending</h3>
+                <p className="stat-value">{dashboardData.pendingRewards}</p>
+                <p className="stat-label">Rewards waiting to be redeemed</p>
+              </div>
             </div>
           </div>
-
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#f56565' }}>
-              <span>🎁</span>
-            </div>
-            <div className="stat-content">
-              <h3>Total Rewards</h3>
-              <p className="stat-value">{dashboardData.totalRewards}</p>
-              <p className="stat-label">Rewards earned by customers</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#48bb78' }}>
-              <span>✓</span>
-            </div>
-            <div className="stat-content">
-              <h3>Redeemed</h3>
-              <p className="stat-value">{dashboardData.redeemedRewards}</p>
-              <p className="stat-label">
-                {dashboardData.totalRewards > 0 
-                  ? `${Math.round((dashboardData.redeemedRewards / dashboardData.totalRewards) * 100)}% redemption rate`
-                  : 'No rewards yet'}
-              </p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon" style={{ background: '#ed8936' }}>
-              <span>⏳</span>
-            </div>
-            <div className="stat-content">
-              <h3>Pending</h3>
-              <p className="stat-value">{dashboardData.pendingRewards}</p>
-              <p className="stat-label">Rewards waiting to be redeemed</p>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
 
       {/* QR Code Section */}
       <div className="qr-code-section">
@@ -320,58 +316,78 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="charts-container">
-        <div className="chart-card">
-          <h3>New Cards Created (Last 30 Days)</h3>
-          {newCardsData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={newCardsData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                />
-                <YAxis />
-                <Tooltip 
-                  labelFormatter={(date) => new Date(date).toLocaleDateString()}
-                />
-                <Legend />
-                <Bar dataKey="count" fill="#667eea" name="New Cards" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="no-data">No new cards data available</p>
-          )}
-        </div>
+        <div className="charts-container">
+          <div className="chart-card">
+            <h3>New Cards Created (Last 30 Days)</h3>
+            {newCardsData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={newCardsData}>
+                  <defs>
+                    <linearGradient id="colorCards" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4db8a8" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#4db8a8" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    stroke="#718096"
+                  />
+                  <YAxis stroke="#718096" />
+                  <Tooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="#4db8a8" 
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorCards)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="no-data">No new cards data available</p>
+            )}
+          </div>
 
-        <div className="chart-card">
-          <h3>Daily Stamp Activity (Last 30 Days)</h3>
-          {stampActivityData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stampActivityData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                />
-                <YAxis />
-                <Tooltip 
-                  labelFormatter={(date) => new Date(date).toLocaleDateString()}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="stamps" 
-                  stroke="#48bb78" 
-                  strokeWidth={2}
-                  name="Stamps Issued"
-                  dot={{ fill: '#48bb78' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="no-data">No stamp activity data available</p>
-          )}
+          <div className="chart-card">
+            <h3>Daily Stamp Activity (Last 30 Days)</h3>
+            {stampActivityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={stampActivityData}>
+                  <defs>
+                    <linearGradient id="colorStamps" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4db8a8" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#4db8a8" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    stroke="#718096"
+                  />
+                  <YAxis stroke="#718096" />
+                  <Tooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="stamps" 
+                    stroke="#4db8a8" 
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorStamps)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="no-data">No stamp activity data available</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

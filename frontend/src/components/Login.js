@@ -11,6 +11,11 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const useDemoAccount = () => {
+    setEmail('jc@mail.com');
+    setPassword('password123');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -19,7 +24,6 @@ function Login() {
     const result = await login(email, password);
     
     if (result.success) {
-      // Small delay to ensure token is set
       setTimeout(() => {
         navigate('/dashboard');
       }, 100);
@@ -33,8 +37,9 @@ function Login() {
     <div className="login-container">
       <div className="login-card">
         <div className="login-header">
-          <h1>PunchMe</h1>
-          <p>Merchant Portal</p>
+          <div className="login-logo">🎴</div>
+          <h1 className="login-title">PunchMe</h1>
+          <p className="login-subtitle">Merchant Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
@@ -64,23 +69,29 @@ function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder="Your password"
               required
               disabled={loading}
             />
           </div>
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Log In'}
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
+        <div className="demo-account">
+          <p className="demo-account-title">Demo Account</p>
+          <button type="button" className="demo-account-button" onClick={useDemoAccount}>
+            Use Demo Account<br/>
+            (email: jc@mail.com / password123)
+          </button>
+        </div>
+
         <div className="login-footer">
-          <p className="demo-note">
-            Demo Account:<br/>
-            Email: admin@merchant.com<br/>
-            Password: password123
-          </p>
+          <button type="button" className="forgot-password" onClick={() => alert('Please contact support')}>
+            Forgot password?
+          </button>
           <p className="signup-link">
             Don't have an account? <Link to="/signup">Sign up</Link>
           </p>
