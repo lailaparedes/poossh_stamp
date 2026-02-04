@@ -1,0 +1,25 @@
+# Render Blueprint for PunchMe Merchant Portal
+# This file defines the infrastructure as code for easy deployment
+
+services:
+  # Web Service - Backend + Frontend
+  - type: web
+    name: punchme-merchant-portal
+    env: node
+    region: oregon # Change to your preferred region
+    plan: free # or 'starter' for production
+    buildCommand: npm run build:all
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SUPABASE_URL
+        sync: false # Set in Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false # Set in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true # Render will auto-generate a secure secret
+    healthCheckPath: /api/merchants/all
+    autoDeploy: true # Auto-deploy on git push

@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "punchme-merchant-backend",
   "version": "1.0.0",
   "description": "Backend API for PunchMe Merchant Insights",
@@ -20,4 +21,30 @@
   "devDependencies": {
     "nodemon": "^3.0.2"
   }
+=======
+  "name": "punchme-merchant-portal",
+  "version": "1.0.0",
+  "description": "Merchant analytics portal for PunchMe loyalty app",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd backend && npm install",
+    "build:all": "npm run build:backend && npm run build:frontend",
+    "postinstall": "npm run build:all"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "loyalty",
+    "merchant",
+    "analytics",
+    "punchme"
+  ],
+  "author": "Your Name",
+  "license": "ISC"
+>>>>>>> 1ac8bd2 (Initial commit - PunchMe Merchant Portal)
 }
