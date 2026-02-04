@@ -1,5 +1,5 @@
 const QRCode = require('qrcode');
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 /**
  * Generate a QR code as a data URL for a merchant
@@ -9,7 +9,7 @@ const { v4: uuidv4 } = require('uuid');
 async function generateMerchantQRCode(merchantId) {
   try {
     // Generate unique QR code ID - this invalidates all previous QR codes
-    const qrCodeId = uuidv4();
+    const qrCodeId = crypto.randomUUID();
     
     // Create QR code data - encode the merchant ID and QR code ID
     // The PunchMe app will validate both the merchantId and qrCodeId
