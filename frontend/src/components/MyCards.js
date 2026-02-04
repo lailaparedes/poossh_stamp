@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import './MyCards.css';
 
 function MyCards() {
-  const { user, logout, updateToken } = useAuth();
+  const { user, updateToken } = useAuth();
   const navigate = useNavigate();
   
   const [merchants, setMerchants] = useState([]);
@@ -144,11 +144,6 @@ function MyCards() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
   if (loading && merchants.length === 0) {
     return (
       <>
@@ -190,9 +185,6 @@ function MyCards() {
           <div className="my-cards-header-actions">
             <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
               Dashboard
-            </button>
-            <button className="btn-logout" onClick={handleLogout}>
-              Logout
             </button>
           </div>
         </div>

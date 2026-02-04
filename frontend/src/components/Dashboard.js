@@ -67,13 +67,23 @@ function Dashboard() {
   }, [user, logout, navigate]);
 
   useEffect(() => {
+    // Fetch data immediately on mount/login
     fetchAllData();
   }, [fetchAllData]);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  useEffect(() => {
+    // Set up auto-refresh every 1 hour (3600000ms)
+    const refreshInterval = setInterval(() => {
+      console.log('Auto-refreshing dashboard data...');
+      fetchAllData();
+    }, 3600000); // 1 hour = 60 * 60 * 1000 = 3600000ms
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(refreshInterval);
+      console.log('Dashboard auto-refresh cleared');
+    };
+  }, [fetchAllData]);
 
   const showNotification = (type, message, duration = 5000) => {
     setNotification({ type, message });
@@ -208,11 +218,18 @@ function Dashboard() {
             </div>
           </div>
           <div className="header-actions">
+            <button 
+              className="btn-refresh" 
+              onClick={() => {
+                showNotification('success', 'Refreshing data...', 2000);
+                fetchAllData();
+              }}
+              title="Refresh data"
+            >
+              🔄 Refresh
+            </button>
             <button className="btn-secondary" onClick={() => navigate('/my-cards')}>
               🎴 My Cards
-            </button>
-            <button className="logout-button" onClick={handleLogout}>
-              Logout
             </button>
           </div>
         </div>
@@ -320,29 +337,40 @@ function Dashboard() {
           <div className="chart-card">
             <h3>New Cards Created (Last 30 Days)</h3>
             {newCardsData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={newCardsData}>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={newCardsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCards" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4db8a8" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#4db8a8" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#007AFF" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E5EA" />
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    stroke="#718096"
+                    stroke="#8E8E93"
+                    style={{ fontSize: '12px' }}
                   />
-                  <YAxis stroke="#718096" />
+                  <YAxis 
+                    stroke="#8E8E93"
+                    style={{ fontSize: '12px' }}
+                    allowDecimals={false}
+                  />
                   <Tooltip 
-                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    contentStyle={{
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #E5E5EA',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="count" 
-                    stroke="#4db8a8" 
-                    strokeWidth={2}
+                    stroke="#007AFF" 
+                    strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorCards)"
                   />
@@ -356,29 +384,40 @@ function Dashboard() {
           <div className="chart-card">
             <h3>Daily Stamp Activity (Last 30 Days)</h3>
             {stampActivityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={stampActivityData}>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={stampActivityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorStamps" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4db8a8" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#4db8a8" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#5856D6" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#5856D6" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E5EA" />
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    stroke="#718096"
+                    stroke="#8E8E93"
+                    style={{ fontSize: '12px' }}
                   />
-                  <YAxis stroke="#718096" />
+                  <YAxis 
+                    stroke="#8E8E93"
+                    style={{ fontSize: '12px' }}
+                    allowDecimals={false}
+                  />
                   <Tooltip 
-                    labelFormatter={(date) => new Date(date).toLocaleDateString()}
+                    labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    contentStyle={{
+                      background: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #E5E5EA',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="stamps" 
-                    stroke="#4db8a8" 
-                    strokeWidth={2}
+                    stroke="#5856D6" 
+                    strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorStamps)"
                   />

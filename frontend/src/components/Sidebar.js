@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import './Sidebar.css';
 
 function Sidebar() {
   const navigate = useNavigate();
