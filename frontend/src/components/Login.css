@@ -181,13 +181,17 @@
 
 .forgot-password {
   color: #718096;
-  text-decoration: none;
+  background: none;
+  border: none;
   font-size: 0.875rem;
+  cursor: pointer;
   transition: color 0.2s;
+  padding: 0;
 }
 
 .forgot-password:hover {
   color: #4db8a8;
+  text-decoration: underline;
 }
 
 .signup-link {
