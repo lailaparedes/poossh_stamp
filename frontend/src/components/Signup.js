@@ -88,7 +88,7 @@ function Signup() {
     <div className="signup-container">
       <div className="signup-card">
         <div className="signup-header">
-          <h1>Join PunchMe</h1>
+          <h1>Join Poossh Stamp</h1>
           <p>Create your merchant account</p>
         </div>
 

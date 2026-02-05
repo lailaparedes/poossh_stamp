@@ -72,7 +72,7 @@ function Setup() {
     <div className="setup-container">
       <div className="setup-card">
         <div className="setup-header">
-          <h1>Welcome to PunchMe!</h1>
+          <h1>Welcome to Poossh Stamp!</h1>
           <p>Let's set up your loyalty rewards program</p>
           <button className="logout-link" onClick={handleLogout}>
             Logout
@@ -84,7 +84,7 @@ function Setup() {
             <div className="welcome-icon">🎉</div>
             <h2>Let's Get Started</h2>
             <p>
-              Create your digital stamp card that customers will see in the PunchMe app.
+              Create your digital stamp card that customers will see in the Poossh Stamp app.
               Once you're done, customers can start collecting stamps at your business!
             </p>
           </div>

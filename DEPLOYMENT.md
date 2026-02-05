@@ -1,4 +1,4 @@
-# Deployment Guide - PunchMe Merchant Portal
+# Deployment Guide - Poossh Stamp Merchant Portal
 
 ## Quick Deploy to Render
 
@@ -9,7 +9,7 @@
    cd /Users/lailaparedes/OfficialStamp/webpage
    git init
    git add .
-   git commit -m "Initial commit - PunchMe Merchant Portal"
+   git commit -m "Initial commit - Poossh Stamp Merchant Portal"
    git remote add origin <your-github-repo-url>
    git push -u origin main
    ```
@@ -33,7 +33,7 @@
 4. **Deploy!**
    - Click **"Create Web Service"**
    - Render will automatically build and deploy
-   - Your site will be live at: `https://punchme-merchant-portal.onrender.com`
+   - Your site will be live at: `https://poossh-stamp-merchant-portal.onrender.com`
 
 ---
 
@@ -90,7 +90,7 @@ Make sure this endpoint returns 200 OK.
 
 1. In Render dashboard → Your service → **"Settings"**
 2. Scroll to **"Custom Domain"**
-3. Add your domain: `merchants.punchme.com`
+3. Add your domain: `merchants.poossh-stamp.com`
 4. Update DNS records as instructed
 5. SSL certificate auto-generated!
 

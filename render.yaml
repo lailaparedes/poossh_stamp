@@ -1,10 +1,10 @@
-# Render Blueprint for PunchMe Merchant Portal
+# Render Blueprint for Poossh Stamp Merchant Portal
 # This file defines the infrastructure as code for easy deployment
 
 services:
   # Web Service - Backend + Frontend
   - type: web
-    name: punchme-merchant-portal
+    name: poossh-stamp-merchant-portal
     env: node
     region: oregon # Change to your preferred region
     plan: free # or 'starter' for production

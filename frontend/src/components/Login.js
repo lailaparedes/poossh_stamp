@@ -38,7 +38,7 @@ function Login() {
       <div className="login-card">
         <div className="login-header">
           <div className="login-logo">🎴</div>
-          <h1 className="login-title">PunchMe</h1>
+          <h1 className="login-title">Poossh Stamp</h1>
           <p className="login-subtitle">Merchant Portal</p>
         </div>
 

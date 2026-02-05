@@ -36,7 +36,7 @@ function Sidebar() {
       <div className="sidebar-header">
         <div className="sidebar-logo">🎴</div>
         <div className="sidebar-title">
-          <h2>PunchMe</h2>
+          <h2>Poossh Stamp</h2>
           <p>Merchant Portal</p>
         </div>
       </div>

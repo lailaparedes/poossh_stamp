@@ -1,7 +1,7 @@
 {
-  "name": "punchme-merchant-portal",
+  "name": "poossh-stamp-merchant-portal",
   "version": "1.0.0",
-  "description": "Merchant analytics portal for PunchMe loyalty app",
+  "description": "Merchant analytics portal for Poossh Stamp loyalty app",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -30,7 +30,8 @@
     "loyalty",
     "merchant",
     "analytics",
-    "punchme"
+    "poossh",
+    "stamp"
   ],
   "author": "Laila Paredes",
   "license": "ISC"

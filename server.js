@@ -21,7 +21,7 @@ app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'PunchMe Merchant API is running' });
+  res.json({ status: 'ok', message: 'Poossh Stamp Merchant API is running' });
 });
 
 // Serve React frontend (production build)
