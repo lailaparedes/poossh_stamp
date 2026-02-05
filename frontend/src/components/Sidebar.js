@@ -11,7 +11,7 @@ function Sidebar() {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: '📊', path: '/dashboard' },
     { id: 'my-cards', label: 'My Cards', icon: '🎴', path: '/my-cards' },
-    { id: 'customers', label: 'Customers', icon: '👥', path: '#', disabled: true },
+    { id: 'customers', label: 'Customers', icon: '👥', path: '/customers' },
     { id: 'rewards', label: 'Rewards', icon: '🎁', path: '#', disabled: true },
   ];
 

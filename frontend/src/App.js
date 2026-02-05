@@ -6,6 +6,7 @@ import Signup from './components/Signup';
 import Setup from './components/Setup';
 import Dashboard from './components/Dashboard';
 import MyCards from './components/MyCards';
+import Customers from './components/Customers';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -38,6 +39,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <MyCards />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/customers" 
+              element={
+                <ProtectedRoute>
+                  <Customers />
                 </ProtectedRoute>
               } 
             />

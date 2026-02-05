@@ -231,13 +231,11 @@ router.get('/customers', authenticateMerchant, async (req, res) => {
         current_stamps,
         total_rewards,
         created_at,
-        updated_at,
         users (
           id,
           name,
           email,
-          phone_number,
-          avatar
+          phone_number
         ),
         merchants (
           id,
@@ -270,11 +268,11 @@ router.get('/customers', authenticateMerchant, async (req, res) => {
           name: card.users?.name || 'Unknown',
           email: card.users?.email || '',
           phone: card.users?.phone_number || '',
-          avatar: card.users?.avatar || null,
+          avatar: null,
           currentStamps: card.current_stamps,
           totalRewards: card.total_rewards,
           joinedDate: card.created_at,
-          lastActivity: card.updated_at,
+          lastActivity: card.created_at,
           stampsRequired: card.merchants?.stamps_required || 10
         });
       }
