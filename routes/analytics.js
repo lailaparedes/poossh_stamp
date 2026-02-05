@@ -3,11 +3,46 @@ const router = express.Router();
 const supabase = require('../config/supabase');
 const authenticateMerchant = require('../middleware/auth');
 
+// Simple in-memory cache for analytics (30 minutes TTL)
+const analyticsCache = new Map();
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+function getCacheKey(merchantId, endpoint) {
+  return `${merchantId}:${endpoint}`;
+}
+
+function getFromCache(cacheKey) {
+  const cached = analyticsCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    console.log(`[Cache HIT] ${cacheKey}`);
+    return cached.data;
+  }
+  console.log(`[Cache MISS] ${cacheKey}`);
+  return null;
+}
+
+function setCache(cacheKey, data) {
+  analyticsCache.set(cacheKey, {
+    data,
+    timestamp: Date.now()
+  });
+}
+
+// Helper function to convert UTC date to local date string (YYYY-MM-DD)
+function toLocalDateString(dateString) {
+  const date = new Date(dateString);
+  // Use local timezone, format as YYYY-MM-DD
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Get merchant dashboard analytics (Protected Route)
 router.get('/dashboard', authenticateMerchant, async (req, res) => {
   try {
-    console.log('Dashboard request from:', req.merchant);
-    const { merchantId } = req.merchant; // Get from authenticated merchant
+    const { merchantId } = req.merchant;
+    const cacheKey = getCacheKey(merchantId, 'dashboard');
     
     if (!merchantId) {
       console.error('No merchantId found in request');
@@ -17,7 +52,13 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
       });
     }
 
-    console.log('Fetching dashboard data for merchant:', merchantId);
+    // Check cache first
+    const cachedData = getFromCache(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData, cached: true });
+    }
+
+    console.log('[Analytics] Dashboard - Merchant:', merchantId);
 
     // 1. Active Cards Count
     const { count: activeCards, error: activeCardsError } = await supabase
@@ -27,7 +68,7 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
 
     if (activeCardsError) throw activeCardsError;
 
-    // 2. Total Rewards Given Out
+    // 2. Total Rewards Given Out (includes all historical rewards)
     const { count: totalRewards, error: rewardsError } = await supabase
       .from('rewards')
       .select('*', { count: 'exact', head: true })
@@ -44,14 +85,22 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
 
     if (redeemedError) throw redeemedError;
 
+    const dashboardData = {
+      activeCards: activeCards || 0,
+      totalRewards: totalRewards || 0,
+      redeemedRewards: redeemedRewards || 0,
+      pendingRewards: (totalRewards || 0) - (redeemedRewards || 0)
+    };
+
+    console.log('[Analytics] Dashboard stats:', dashboardData);
+
+    // Cache the result for 30 minutes
+    setCache(cacheKey, dashboardData);
+
     res.json({
       success: true,
-      data: {
-        activeCards: activeCards || 0,
-        totalRewards: totalRewards || 0,
-        redeemedRewards: redeemedRewards || 0,
-        pendingRewards: (totalRewards || 0) - (redeemedRewards || 0)
-      }
+      data: dashboardData,
+      cached: false
     });
   } catch (error) {
     console.error('Error fetching dashboard analytics:', error);
@@ -67,17 +116,40 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
   try {
     const { merchantId } = req.merchant;
     const { days = 30 } = req.query;
+    const cacheKey = getCacheKey(merchantId, 'new-cards-daily');
 
-    const { data, error } = await supabase
+    // Check cache first
+    const cachedData = getFromCache(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData, cached: true });
+    }
+
+    // Fetch active cards
+    const { data: activeCards, error: activeError } = await supabase
       .from('stamp_cards')
       .select('created_at')
       .eq('merchant_id', merchantId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at');
 
-    if (error) throw error;
+    if (activeError) throw activeError;
 
-    // Create all dates in the range
+    // Fetch deleted cards (for historical accuracy)
+    const { data: deletedCards, error: deletedError } = await supabase
+      .from('deleted_stamp_cards')
+      .select('created_at')
+      .eq('merchant_id', merchantId)
+      .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
+
+    // Combine active and deleted cards for accurate historical count
+    const allCards = [
+      ...(activeCards || []),
+      ...(deletedCards || [])
+    ];
+    
+    console.log(`[Analytics] New cards data - Merchant: ${merchantId}, Active: ${activeCards?.length || 0}, Deleted: ${deletedCards?.length || 0}, Total: ${allCards.length}`);
+
+    // Create all dates in the range (using local timezone)
     const endDate = new Date();
     endDate.setHours(0, 0, 0, 0);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -87,16 +159,16 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
     // Initialize all dates with 0
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = toLocalDateString(currentDate.toISOString());
       cardsByDate[dateStr] = 0;
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Fill in actual data
-    if (data && data.length > 0) {
-      data.forEach(card => {
-        const date = new Date(card.created_at).toISOString().split('T')[0];
-        cardsByDate[date] = (cardsByDate[date] || 0) + 1;
+    // Fill in actual data using local timezone
+    if (allCards.length > 0) {
+      allCards.forEach(card => {
+        const dateStr = toLocalDateString(card.created_at);
+        cardsByDate[dateStr] = (cardsByDate[dateStr] || 0) + 1;
       });
     }
 
@@ -108,7 +180,10 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
         count
       }));
 
-    res.json({ success: true, data: chartData });
+    // Cache the result for 30 minutes
+    setCache(cacheKey, chartData);
+
+    res.json({ success: true, data: chartData, cached: false });
   } catch (error) {
     console.error('Error fetching new cards data:', error);
     res.status(500).json({ 
@@ -123,6 +198,13 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
   try {
     const { merchantId } = req.merchant;
     const { days = 30 } = req.query;
+    const cacheKey = getCacheKey(merchantId, 'stamp-activity');
+
+    // Check cache first
+    const cachedData = getFromCache(cacheKey);
+    if (cachedData) {
+      return res.json({ success: true, data: cachedData, cached: true });
+    }
 
     const { data, error } = await supabase
       .from('stamp_history')
@@ -132,8 +214,11 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
       .order('created_at');
 
     if (error) throw error;
+    
+    const totalStamps = data?.reduce((sum, s) => sum + s.amount, 0) || 0;
+    console.log(`[Analytics] Stamp activity - Merchant: ${merchantId}, Transactions: ${data?.length || 0}, Total stamps: ${totalStamps}`);
 
-    // Create all dates in the range
+    // Create all dates in the range (using local timezone)
     const endDate = new Date();
     endDate.setHours(0, 0, 0, 0);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -143,16 +228,16 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
     // Initialize all dates with 0
     const currentDate = new Date(startDate);
     while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
+      const dateStr = toLocalDateString(currentDate.toISOString());
       stampsByDate[dateStr] = 0;
       currentDate.setDate(currentDate.getDate() + 1);
     }
 
-    // Fill in actual data
+    // Fill in actual data using local timezone
     if (data && data.length > 0) {
       data.forEach(stamp => {
-        const date = new Date(stamp.created_at).toISOString().split('T')[0];
-        stampsByDate[date] = (stampsByDate[date] || 0) + stamp.amount;
+        const dateStr = toLocalDateString(stamp.created_at);
+        stampsByDate[dateStr] = (stampsByDate[dateStr] || 0) + stamp.amount;
       });
     }
 
@@ -164,7 +249,10 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
         stamps
       }));
 
-    res.json({ success: true, data: chartData });
+    // Cache the result for 30 minutes
+    setCache(cacheKey, chartData);
+
+    res.json({ success: true, data: chartData, cached: false });
   } catch (error) {
     console.error('Error fetching stamp activity:', error);
     res.status(500).json({ 
@@ -287,6 +375,39 @@ router.get('/customers', authenticateMerchant, async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: error.message || error.toString() || 'Failed to fetch customers' 
+    });
+  }
+});
+
+// Clear cache for merchant (useful for manual refresh)
+router.post('/clear-cache', authenticateMerchant, async (req, res) => {
+  try {
+    const { merchantId } = req.merchant;
+    
+    // Clear all cache entries for this merchant
+    const endpoints = ['dashboard', 'new-cards-daily', 'stamp-activity'];
+    let clearedCount = 0;
+    
+    endpoints.forEach(endpoint => {
+      const cacheKey = getCacheKey(merchantId, endpoint);
+      if (analyticsCache.has(cacheKey)) {
+        analyticsCache.delete(cacheKey);
+        clearedCount++;
+      }
+    });
+    
+    console.log(`[Cache] Cleared ${clearedCount} cache entries for merchant: ${merchantId}`);
+    
+    res.json({ 
+      success: true, 
+      message: `Cache cleared for ${clearedCount} endpoints`,
+      clearedCount
+    });
+  } catch (error) {
+    console.error('Error clearing cache:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || 'Failed to clear cache' 
     });
   }
 });

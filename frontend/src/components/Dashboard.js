@@ -19,7 +19,7 @@ function Dashboard() {
   const [generatingQr, setGeneratingQr] = useState(false);
   const [notification, setNotification] = useState(null); // { type: 'success' | 'error' | 'warning', message: string }
 
-  const fetchAllData = useCallback(async () => {
+  const fetchAllData = useCallback(async (clearCache = false) => {
     // Don't fetch if user has no merchant
     if (!user || !user.merchant) {
       setLoading(false);
@@ -29,6 +29,14 @@ function Dashboard() {
     try {
       setLoading(true);
       setError(null);
+
+      // Clear cache if requested (for manual refresh)
+      if (clearCache) {
+        await axios.post('/api/analytics/clear-cache').catch(err => {
+          console.warn('Failed to clear cache:', err);
+          // Continue with fetch even if cache clear fails
+        });
+      }
 
       // Fetch dashboard analytics
       const dashboardRes = await axios.get('/api/analytics/dashboard');
@@ -222,7 +230,7 @@ function Dashboard() {
               className="btn-refresh" 
               onClick={() => {
                 showNotification('success', 'Refreshing data...', 2000);
-                fetchAllData();
+                fetchAllData(true); // Clear cache for fresh data
               }}
               title="Refresh data"
             >
