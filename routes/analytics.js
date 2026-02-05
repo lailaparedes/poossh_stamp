@@ -208,4 +208,89 @@ router.get('/top-customers', authenticateMerchant, async (req, res) => {
   }
 });
 
+// Get all customers with their loyalty cards for the logged-in user's merchants (Protected Route)
+router.get('/customers', authenticateMerchant, async (req, res) => {
+  try {
+    const { merchantId, userId } = req.merchant;
+
+    // Get all merchants created by this user
+    const { data: userMerchants, error: merchantsError } = await supabase
+      .from('merchants')
+      .select('id, name, logo, category')
+      .eq('created_by', userId);
+
+    if (merchantsError) throw merchantsError;
+
+    // Get all stamp cards for these merchants with user details
+    const { data: stampCards, error: cardsError } = await supabase
+      .from('stamp_cards')
+      .select(`
+        id,
+        user_id,
+        merchant_id,
+        current_stamps,
+        total_rewards,
+        created_at,
+        updated_at,
+        users (
+          id,
+          name,
+          email,
+          phone_number,
+          avatar
+        ),
+        merchants (
+          id,
+          name,
+          logo,
+          category,
+          stamps_required
+        )
+      `)
+      .in('merchant_id', userMerchants.map(m => m.id))
+      .order('created_at', { ascending: false });
+
+    if (cardsError) throw cardsError;
+
+    // Group customers by merchant
+    const customersByMerchant = {};
+    
+    userMerchants.forEach(merchant => {
+      customersByMerchant[merchant.id] = {
+        merchant: merchant,
+        customers: []
+      };
+    });
+
+    stampCards.forEach(card => {
+      if (customersByMerchant[card.merchant_id]) {
+        customersByMerchant[card.merchant_id].customers.push({
+          cardId: card.id,
+          userId: card.user_id,
+          name: card.users?.name || 'Unknown',
+          email: card.users?.email || '',
+          phone: card.users?.phone_number || '',
+          avatar: card.users?.avatar || null,
+          currentStamps: card.current_stamps,
+          totalRewards: card.total_rewards,
+          joinedDate: card.created_at,
+          lastActivity: card.updated_at,
+          stampsRequired: card.merchants?.stamps_required || 10
+        });
+      }
+    });
+
+    res.json({ 
+      success: true, 
+      data: Object.values(customersByMerchant)
+    });
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message || error.toString() || 'Failed to fetch customers' 
+    });
+  }
+});
+
 module.exports = router;
