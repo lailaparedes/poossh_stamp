@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Sidebar from './Sidebar';
+import NavBar from './NavBar';
 import './Customers.css';
 
 function Customers() {
@@ -182,10 +182,10 @@ function Customers() {
   const filteredCustomers = filterCustomers(allCustomers);
 
   return (
-    <div className="customers-container">
-      <Sidebar />
-      
-      <div className="customers-content">
+    <>
+      <NavBar />
+      <div className="page-with-navbar customers-container">
+        <div className="customers-content">
         {/* Header with back button and export */}
         <div className="customers-header">
           <div className="header-left">
@@ -375,8 +375,9 @@ function Customers() {
             )}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

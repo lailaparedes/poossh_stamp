@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
+import NavBar from './NavBar';
 import './MyCards.css';
 
 function MyCards() {
@@ -145,39 +146,24 @@ function MyCards() {
 
   if (loading && merchants.length === 0) {
     return (
-      <div className="my-cards-container">
-        <nav className="my-cards-nav">
-          <div className="nav-content">
-            <Link to="/" className="nav-logo">
-              <span className="logo-icon">🎴</span>
-              <span className="logo-text">Poossh Stamp</span>
-            </Link>
-          </div>
-        </nav>
-        <div className="my-cards-main">
-          <div className="loading-container">
-            <div className="loading-spinner"></div>
-            <p>Loading your loyalty cards...</p>
+      <>
+        <NavBar />
+        <div className="page-with-navbar my-cards-container">
+          <div className="my-cards-main">
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading your loyalty cards...</p>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="my-cards-container">
-      {/* Navigation */}
-      <nav className="my-cards-nav">
-        <div className="nav-content">
-          <Link to="/" className="nav-logo">
-            <span className="logo-icon">🎴</span>
-            <span className="logo-text">Poossh Stamp</span>
-          </Link>
-          <button className="btn-nav-dashboard" onClick={() => navigate('/dashboard')}>
-            Dashboard
-          </button>
-        </div>
-      </nav>
+    <>
+      <NavBar />
+      <div className="page-with-navbar my-cards-container">
 
       {/* Success/Error Notifications */}
       {successMessage && (
@@ -383,7 +369,8 @@ function MyCards() {
         </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

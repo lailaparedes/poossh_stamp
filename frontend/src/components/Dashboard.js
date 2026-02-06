@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import Sidebar from './Sidebar';
+import NavBar from './NavBar';
 import './Dashboard.css';
 
 function Dashboard() {
@@ -171,8 +171,8 @@ function Dashboard() {
   if (!user?.merchant) {
     return (
       <>
-        <Sidebar />
-        <div className="dashboard-content">
+        <NavBar />
+        <div className="page-with-navbar dashboard-content">
           <div className="empty-state">
             <div className="empty-state-icon">🚀</div>
             <h2>Let's Get Started!</h2>
@@ -190,8 +190,9 @@ function Dashboard() {
   }
 
   return (
-    <div className="dashboard">
-      <Sidebar />
+    <>
+      <NavBar />
+      <div className="page-with-navbar dashboard">
       
       {/* Notification Toast */}
       {notification && (
@@ -437,7 +438,8 @@ function Dashboard() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
