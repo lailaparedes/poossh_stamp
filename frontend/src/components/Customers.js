@@ -346,18 +346,15 @@ function Customers() {
                   
                   {selectedCustomer.cards.map((card) => (
                     <div key={card.cardId} className="active-card-detail">
-                      <div className="card-detail-header" style={{ backgroundColor: card.color }}>
-                        <span>{card.merchantName}</span>
-                      </div>
-                      <div className="card-detail-info">
-                        <span>{card.currentStamps} / {card.stampsRequired} stamps</span>
+                      <div className="card-detail-header">
+                        <span className="card-detail-name">{card.merchantName}</span>
+                        <span className="card-detail-stamps">{card.currentStamps} / {card.stampsRequired} stamps</span>
                       </div>
                       <div className="card-detail-progress">
                         <div 
                           className="progress-bar-detail"
                           style={{ 
-                            width: `${getProgressPercentage(card.currentStamps, card.stampsRequired)}%`,
-                            backgroundColor: card.color
+                            width: `${getProgressPercentage(card.currentStamps, card.stampsRequired)}%`
                           }}
                         ></div>
                       </div>
