@@ -35,66 +35,101 @@ function Login() {
 
   return (
     <div className="login-container">
-      <div className="login-card">
-        <div className="login-header">
-          <div className="login-logo">🎴</div>
-          <h1 className="login-title">Poossh Stamp</h1>
-          <p className="login-subtitle">Merchant Portal</p>
+      {/* Navigation */}
+      <nav className="login-nav">
+        <div className="nav-content">
+          <Link to="/" className="nav-logo">
+            <span className="logo-icon">🎴</span>
+            <span className="logo-text">Poossh Stamp</span>
+          </Link>
+          <Link to="/signup" className="btn-nav-signup">
+            Sign Up
+          </Link>
         </div>
+      </nav>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          {error && (
-            <div className="error-message">
-              {error}
+      {/* Main Content */}
+      <div className="login-main">
+        <div className="login-content">
+          <div className="login-header">
+            <h1>Welcome back</h1>
+            <p>Log in to your merchant account.</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="login-form">
+            {error && (
+              <div className="error-message">
+                ⚠️ {error}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label htmlFor="email">Email Address</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                disabled={loading}
+              />
             </div>
-          )}
 
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              disabled={loading}
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+                disabled={loading}
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              required
-              disabled={loading}
-            />
-          </div>
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="btn-forgot" 
+                onClick={() => alert('Please contact support at support@poossh.com')}
+              >
+                Forgot password?
+              </button>
+            </div>
 
-          <button type="submit" className="login-button" disabled={loading}>
-            {loading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
+            <button type="submit" className="btn-login" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
+            </button>
 
-        <div className="demo-account">
-          <p className="demo-account-title">Demo Account</p>
-          <button type="button" className="demo-account-button" onClick={useDemoAccount}>
-            Use Demo Account<br/>
-            (email: jc@mail.com / password123)
-          </button>
-        </div>
+            <div className="demo-section">
+              <div className="demo-divider">
+                <span>or try demo</span>
+              </div>
+              <button 
+                type="button" 
+                className="btn-demo" 
+                onClick={useDemoAccount}
+              >
+                Use Demo Account
+              </button>
+              <p className="demo-hint">Email: jc@mail.com • Password: password123</p>
+            </div>
 
-        <div className="login-footer">
-          <button type="button" className="forgot-password" onClick={() => alert('Please contact support')}>
-            Forgot password?
-          </button>
-          <p className="signup-link">
-            Don't have an account? <Link to="/signup">Sign up</Link>
-          </p>
+            <div className="form-footer">
+              <p>
+                Don't have an account? <Link to="/signup">Sign up</Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>
