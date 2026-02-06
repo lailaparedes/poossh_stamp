@@ -312,10 +312,6 @@ function MyCards() {
                 key={merchant.id} 
                 className={`loyalty-card ${user?.merchant?.id === merchant.id ? 'active' : ''}`}
               >
-                {user?.merchant?.id === merchant.id && (
-                  <span className="active-badge">Active</span>
-                )}
-                
                 <div className="card-header">
                   <div className="card-logo">
                     {merchant.logo && !merchant.logo.includes('http') ? merchant.logo : '🏪'}
