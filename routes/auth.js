@@ -126,10 +126,10 @@ router.post('/login', async (req, res) => {
         .eq('id', user.merchant_id)
         .single();
       
-      user.merchants = merchant;
+      user.merchant = merchant;
       console.log('Merchant loaded:', merchant?.name || 'NO MERCHANT');
     } else {
-      user.merchants = null;
+      user.merchant = null;
       console.log('No merchant for this user yet');
     }
 
@@ -190,8 +190,10 @@ router.post('/login', async (req, res) => {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
+          businessName: user.full_name,
           role: user.role,
-          merchant: user.merchants
+          createdAt: user.created_at,
+          merchant: user.merchant
         }
       }
     });
@@ -258,9 +260,9 @@ router.get('/verify', async (req, res) => {
         .eq('id', user.merchant_id)
         .single();
       
-      user.merchants = merchant;
+      user.merchant = merchant;
     } else {
-      user.merchants = null;
+      user.merchant = null;
     }
 
     res.json({
@@ -270,8 +272,10 @@ router.get('/verify', async (req, res) => {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
+          businessName: user.full_name,
           role: user.role,
-          merchant: user.merchants
+          createdAt: user.created_at,
+          merchant: user.merchant
         }
       }
     });
