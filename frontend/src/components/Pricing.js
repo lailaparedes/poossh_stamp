@@ -41,7 +41,6 @@ function Pricing() {
           <div className="pricing-header">
             <h2>Pricing</h2>
             <p>No hidden fees.</p>
-            <button className="btn-view-template">✦ View Template</button>
           </div>
 
           <div className="pricing-cards">

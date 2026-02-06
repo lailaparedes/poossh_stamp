@@ -42,7 +42,6 @@ function LandingPage() {
         <div className="preview-container">
           <h2 className="section-title">Create stamp cards in minutes.</h2>
           <p className="section-subtitle">Flexible rewards, simple setup.</p>
-          <div className="preview-badge">→ Free Template</div>
         </div>
       </section>
 
