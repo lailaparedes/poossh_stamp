@@ -7,7 +7,7 @@ import NavBar from './NavBar';
 import './Dashboard.css';
 
 function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateToken } = useAuth();
   const navigate = useNavigate();
   
   const [dashboardData, setDashboardData] = useState(null);
@@ -18,6 +18,24 @@ function Dashboard() {
   const [qrCode, setQrCode] = useState(null);
   const [generatingQr, setGeneratingQr] = useState(false);
   const [notification, setNotification] = useState(null); // { type: 'success' | 'error' | 'warning', message: string }
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    businessName: '',
+    stampsRequired: 10,
+    logo: '🏪',
+    color: '#667eea'
+  });
+
+  const colorOptions = [
+    { name: 'Purple', value: '#667eea' },
+    { name: 'Blue', value: '#4299e1' },
+    { name: 'Green', value: '#48bb78' },
+    { name: 'Orange', value: '#ed8936' },
+    { name: 'Red', value: '#f56565' },
+    { name: 'Pink', value: '#ed64a6' }
+  ];
+
+  const emojiOptions = ['🏪', '☕', '🍕', '🍔', '🍰', '💇', '🏋️', '🎬', '🛍️', '🌮'];
 
   const fetchAllData = useCallback(async (clearCache = false) => {
     // Don't fetch if user has no merchant
@@ -78,6 +96,18 @@ function Dashboard() {
     // Fetch data immediately on mount/login
     fetchAllData();
   }, [fetchAllData]);
+
+  useEffect(() => {
+    // Populate edit form when merchant data is available
+    if (user?.merchant) {
+      setEditFormData({
+        businessName: user.merchant.name || '',
+        stampsRequired: user.merchant.stamps_required || 10,
+        logo: user.merchant.logo || '🏪',
+        color: user.merchant.color || '#667eea'
+      });
+    }
+  }, [user?.merchant]);
 
   useEffect(() => {
     // Set up auto-refresh every 1 hour (3600000ms)
@@ -144,6 +174,37 @@ function Dashboard() {
     } catch (err) {
       console.error('Error downloading QR code:', err);
       showNotification('error', 'Failed to download QR code');
+    }
+  };
+
+  const handleEditCard = async (e) => {
+    e.preventDefault();
+    
+    if (!user?.merchant?.id) {
+      showNotification('error', 'No active card to edit');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await axios.put(`/api/merchants/${user.merchant.id}`, editFormData);
+      
+      // Refresh user data to get updated merchant info
+      const response = await axios.get('/api/auth/verify');
+      if (response.data.data?.token) {
+        await updateToken(response.data.data.token);
+      }
+      
+      // Refresh dashboard data
+      await fetchAllData(true);
+      
+      setShowEditForm(false);
+      showNotification('success', 'Card updated successfully!', 3000);
+    } catch (err) {
+      console.error('Error updating card:', err);
+      showNotification('error', err.response?.data?.error || 'Failed to update card');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -227,6 +288,12 @@ function Dashboard() {
           </div>
           <div className="header-actions">
             <button 
+              className="btn-edit-card" 
+              onClick={() => setShowEditForm(!showEditForm)}
+            >
+              {showEditForm ? 'Cancel' : 'Edit Card'}
+            </button>
+            <button 
               className="btn-refresh" 
               onClick={() => {
                 showNotification('success', 'Refreshing data...', 2000);
@@ -241,6 +308,85 @@ function Dashboard() {
             </button>
           </div>
         </div>
+
+        {/* Edit Card Form */}
+        {showEditForm && (
+          <div className="edit-card-form">
+            <h3>Edit Card Details</h3>
+            <form onSubmit={handleEditCard}>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Business Name *</label>
+                  <input
+                    type="text"
+                    value={editFormData.businessName}
+                    onChange={(e) => setEditFormData({ ...editFormData, businessName: e.target.value })}
+                    required
+                    placeholder="e.g., Coffee Shop"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Stamps Required *</label>
+                  <div className="stamps-options">
+                    {[5, 8, 10, 12, 15].map(num => (
+                      <button
+                        key={num}
+                        type="button"
+                        className={`stamp-btn ${editFormData.stampsRequired === num ? 'active' : ''}`}
+                        onClick={() => setEditFormData({ ...editFormData, stampsRequired: num })}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+                  <small>Most businesses choose 10 stamps</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Card Color</label>
+                  <div className="color-picker">
+                    {colorOptions.map(color => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        className={`color-option ${editFormData.color === color.value ? 'active' : ''}`}
+                        style={{ backgroundColor: color.value }}
+                        onClick={() => setEditFormData({ ...editFormData, color: color.value })}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Logo Emoji</label>
+                  <div className="emoji-picker">
+                    {emojiOptions.map(emoji => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        className={`emoji-option ${editFormData.logo === emoji ? 'active' : ''}`}
+                        onClick={() => setEditFormData({ ...editFormData, logo: emoji })}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowEditForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save" disabled={loading}>
+                  {loading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {dashboardData && (
           <div className="stats-grid">
