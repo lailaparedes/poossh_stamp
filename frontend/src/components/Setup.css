@@ -1,74 +1,89 @@
-/* Poossh Stamp Setup - Purple Gradient Theme */
+/* Poossh Stamp Setup - Landing Page Theme (Black/White) */
 
 .setup-container {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2rem;
+  background: #ffffff;
+  color: #1d1d1f;
+}
+
+/* Navigation */
+.setup-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 1000;
+  padding: 1rem 0;
+}
+
+.nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
 }
 
-/* Header */
-.setup-header {
-  width: 100%;
-  max-width: 700px;
-  text-align: center;
-  color: white;
-  margin-bottom: 2rem;
-  position: relative;
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1d1d1f;
 }
 
-.setup-header h1 {
-  font-size: clamp(1.75rem, 4vw, 2rem);
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-  letter-spacing: -0.01em;
+.logo-icon {
+  font-size: 1.5rem;
 }
 
-.header-subtitle {
-  font-size: 1rem;
-  font-weight: 400;
-  opacity: 0.95;
-  margin: 0;
+.logo-text {
+  font-weight: 600;
 }
 
-.btn-logout {
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+.btn-nav-logout {
+  color: #1d1d1f;
+  background: transparent;
+  text-decoration: none;
+  font-size: 0.9375rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
-}
-
-.btn-logout:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Main Card */
-.setup-card {
-  width: 100%;
-  max-width: 700px;
-  background: white;
+  padding: 0.625rem 1.25rem;
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-nav-logout:hover {
+  background: #f5f5f7;
+}
+
+/* Main Content */
+.setup-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 2rem 4rem;
+}
+
+.setup-content {
+  width: 100%;
+  max-width: 640px;
   animation: fadeInUp 0.6s ease-out;
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -76,14 +91,41 @@
   }
 }
 
-.setup-content {
-  padding: clamp(2rem, 5vw, 3rem);
+/* Header */
+.setup-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.setup-header h1 {
+  font-size: clamp(2rem, 5vw, 2.5rem);
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.setup-header p {
+  font-size: 1.125rem;
+  color: #86868b;
+  margin: 0;
+}
+
+/* Form Card */
+.setup-form-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 2.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
 }
 
 /* Welcome Section */
 .welcome-section {
   text-align: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .welcome-icon {
@@ -92,28 +134,25 @@
 }
 
 .welcome-section h2 {
-  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1d1d1f;
-  margin: 0 0 1rem 0;
+  margin: 0 0 0.75rem 0;
   letter-spacing: -0.01em;
 }
 
 .welcome-section p {
   font-size: 0.9375rem;
   line-height: 1.6;
-  color: #6b7280;
+  color: #86868b;
   margin: 0;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Form */
 .setup-form {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.75rem;
 }
 
 .form-group {
@@ -122,8 +161,8 @@
 }
 
 .form-group label {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #1d1d1f;
   margin-bottom: 0.75rem;
 }
@@ -131,15 +170,15 @@
 /* Stamps Selector */
 .stamps-selector {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.625rem;
   flex-wrap: wrap;
   margin-bottom: 0.5rem;
 }
 
 .stamp-option {
   flex: 1;
-  min-width: 90px;
-  padding: 0.875rem 1rem;
+  min-width: 85px;
+  padding: 0.875rem 0.75rem;
   background: #f5f5f7;
   border: 2px solid transparent;
   border-radius: 12px;
@@ -153,14 +192,13 @@
 
 .stamp-option:hover:not(:disabled) {
   background: #ebebed;
-  border-color: #667eea;
+  border-color: #1d1d1f;
 }
 
 .stamp-option.active {
-  background: #667eea;
+  background: #1d1d1f;
   color: white;
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border-color: #1d1d1f;
 }
 
 .stamp-option:disabled {
@@ -171,7 +209,7 @@
 /* Input Fields */
 .form-group input {
   padding: 0.875rem 1rem;
-  border: 2px solid #e5e7eb;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   font-size: 0.9375rem;
   color: #1d1d1f;
@@ -181,13 +219,13 @@
 }
 
 .form-group input::placeholder {
-  color: #9ca3af;
+  color: #86868b;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: #1d1d1f;
+  box-shadow: 0 0 0 3px rgba(29, 29, 31, 0.05);
 }
 
 .form-group input:disabled {
@@ -199,7 +237,14 @@
 /* Hints */
 .hint {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #86868b;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+small {
+  font-size: 0.8125rem;
+  color: #86868b;
   margin-top: 0.5rem;
   display: block;
 }
@@ -207,7 +252,7 @@
 /* Color Selector */
 .color-selector {
   display: flex;
-  gap: 1rem;
+  gap: 0.875rem;
   flex-wrap: wrap;
 }
 
@@ -222,20 +267,20 @@
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .color-option:hover:not(:disabled) {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }
 
 .color-option.active {
-  border-color: white;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
-  transform: scale(1.1);
+  border-color: #1d1d1f;
+  box-shadow: 0 0 0 2px rgba(29, 29, 31, 0.1);
+  transform: scale(1.08);
 }
 
 .color-option:disabled {
@@ -244,14 +289,14 @@
 }
 
 .checkmark {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Error Message */
 .error-message {
-  background: #fee;
-  border: 2px solid #fcc;
-  color: #c33;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  color: #c53030;
   padding: 1rem;
   border-radius: 12px;
   font-size: 0.875rem;
@@ -262,42 +307,46 @@
 
 /* Preview Section */
 .preview-section {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .preview-card {
   background: #f9fafb;
-  border: 3px solid #e5e7eb;
+  border: 2px solid #e5e7eb;
   border-radius: 16px;
-  padding: 1.5rem;
+  padding: 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
   transition: all 0.3s ease;
 }
 
 .preview-logo {
-  font-size: 3rem;
-  width: 70px;
-  height: 70px;
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
 }
 
+.preview-info {
+  flex: 1;
+}
+
 .preview-info h3 {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1d1d1f;
   margin: 0 0 0.25rem 0;
 }
 
 .preview-info p {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0;
 }
@@ -306,7 +355,7 @@
 .btn-submit {
   width: 100%;
   padding: 1rem;
-  background: #667eea;
+  background: #1d1d1f;
   color: white;
   border: none;
   border-radius: 12px;
@@ -318,14 +367,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-top: 1rem;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #5568d3;
+  background: #000000;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .btn-submit:active:not(:disabled) {
@@ -356,26 +405,29 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .setup-container {
-    padding: 1.5rem 1rem;
+  .nav-content {
+    padding: 0 1rem;
   }
 
-  .setup-header {
-    margin-bottom: 1.5rem;
+  .setup-main {
+    padding: 5rem 1rem 3rem;
   }
 
-  .btn-logout {
-    position: static;
-    margin-top: 1rem;
-    width: 100%;
-  }
-
-  .setup-content {
+  .setup-form-card {
     padding: 2rem 1.5rem;
+  }
+
+  .setup-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .setup-header p {
+    font-size: 1rem;
   }
 
   .welcome-section {
     margin-bottom: 2rem;
+    padding-bottom: 2rem;
   }
 
   .stamps-selector {
@@ -383,7 +435,7 @@
   }
 
   .stamp-option {
-    min-width: 70px;
+    min-width: 75px;
     padding: 0.75rem 0.5rem;
     font-size: 0.875rem;
   }
@@ -393,33 +445,37 @@
   }
 
   .color-option {
-    width: 42px;
-    height: 42px;
+    width: 44px;
+    height: 44px;
   }
 
   .preview-card {
-    padding: 1.25rem;
-    gap: 1rem;
+    padding: 1rem;
   }
 
   .preview-logo {
-    font-size: 2.5rem;
-    width: 60px;
-    height: 60px;
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
   }
 }
 
 @media (max-width: 480px) {
-  .setup-container {
-    padding: 1rem;
+  .setup-main {
+    padding: 5rem 1rem 2rem;
   }
 
-  .setup-card {
+  .setup-form-card {
+    padding: 1.5rem;
     border-radius: 16px;
   }
 
-  .setup-content {
-    padding: 1.5rem 1rem;
+  .setup-header {
+    margin-bottom: 2rem;
+  }
+
+  .setup-header h1 {
+    font-size: 1.5rem;
   }
 
   .setup-form {
@@ -428,6 +484,10 @@
 
   .welcome-icon {
     font-size: 2.5rem;
+  }
+
+  .welcome-section h2 {
+    font-size: 1.25rem;
   }
 
   .stamps-selector {
@@ -441,10 +501,6 @@
   .preview-card {
     flex-direction: column;
     text-align: center;
-  }
-
-  .preview-info {
-    width: 100%;
   }
 }
 

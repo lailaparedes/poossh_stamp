@@ -70,31 +70,43 @@ function Setup() {
 
   return (
     <div className="setup-container">
-      {/* Header */}
-      <div className="setup-header">
-        <h1>Welcome to Poossh Stamp!</h1>
-        <p className="header-subtitle">Let's set up your loyalty rewards program</p>
-        <button className="btn-logout" onClick={handleLogout}>
-          Logout
-        </button>
-      </div>
+      {/* Navigation */}
+      <nav className="setup-nav">
+        <div className="nav-content">
+          <div className="nav-logo">
+            <span className="logo-icon">🎴</span>
+            <span className="logo-text">Poossh Stamp</span>
+          </div>
+          <button className="btn-nav-logout" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
 
-      {/* Main Content Card */}
-      <div className="setup-card">
+      {/* Main Content */}
+      <div className="setup-main">
         <div className="setup-content">
-          {/* Welcome Section */}
-          <div className="welcome-section">
-            <div className="welcome-icon">🎉</div>
-            <h2>Let's Get Started</h2>
-            <p>
-              Create your digital stamp card that customers will see in the Poossh Stamp 
-              app. Once you're done, customers can start collecting stamps at your 
-              business!
-            </p>
+          {/* Header */}
+          <div className="setup-header">
+            <h1>Welcome to Poossh Stamp!</h1>
+            <p>Let's set up your loyalty rewards program.</p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="setup-form">
+          {/* Form Card */}
+          <div className="setup-form-card">
+            {/* Welcome Section */}
+            <div className="welcome-section">
+              <div className="welcome-icon">🎉</div>
+              <h2>Let's Get Started</h2>
+              <p>
+                Create your digital stamp card that customers will see in the Poossh Stamp 
+                app. Once you're done, customers can start collecting stamps at your 
+                business!
+              </p>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="setup-form">
             {error && (
               <div className="error-message">
                 ⚠️ {error}
@@ -198,6 +210,7 @@ function Setup() {
               )}
             </button>
           </form>
+          </div>
         </div>
       </div>
     </div>
