@@ -19,7 +19,6 @@ function LandingPage() {
             <a href="#features">Features</a>
             <Link to="/pricing">Pricing</Link>
             <a href="#how-it-works">How it Works</a>
-            <a href="#faq">FAQ</a>
           </div>
           <button className="btn-nav-cta" onClick={() => navigate('/signup')}>
             Launch with Poossh
