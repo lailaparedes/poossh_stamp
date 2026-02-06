@@ -24,6 +24,16 @@ function SubscriptionSuccess() {
       try {
         const token = localStorage.getItem('merchantToken');
         
+        console.log('Token retrieved:', token ? 'YES' : 'NO');
+        console.log('Token length:', token?.length);
+        console.log('Token starts with:', token?.substring(0, 20));
+        
+        if (!token) {
+          setError('No authentication token found. Please log in again.');
+          setVerifying(false);
+          return;
+        }
+        
         const response = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -34,9 +44,9 @@ function SubscriptionSuccess() {
 
         if (data.success) {
           setPlan(data.plan);
-          // Refresh the auth token to get updated user data
+          // Refresh user data with the existing token
           if (updateToken) {
-            await updateToken();
+            await updateToken(token);
           }
           setVerifying(false);
         } else {

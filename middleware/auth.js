@@ -6,9 +6,16 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-producti
 // Middleware to verify JWT token and authenticate merchant
 async function authenticateMerchant(req, res, next) {
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
+
+    console.log('🔐 Auth header received:', authHeader ? 'YES' : 'NO');
+    console.log('🔐 Token extracted:', token ? 'YES' : 'NO');
+    console.log('🔐 Token length:', token?.length);
+    console.log('🔐 Token preview:', token?.substring(0, 30) + '...');
 
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({ 
         success: false, 
         error: 'Authentication required' 
@@ -16,7 +23,9 @@ async function authenticateMerchant(req, res, next) {
     }
 
     // Verify JWT
+    console.log('🔐 Attempting JWT verification...');
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('✅ JWT verified successfully');
 
     // Check if session exists and is valid
     const { data: session, error: sessionError } = await supabase
