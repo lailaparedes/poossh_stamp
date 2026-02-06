@@ -132,23 +132,23 @@ function LandingPage() {
           <div className="footer-links">
             <div className="footer-column">
               <h4>Product</h4>
-              <a href="#features">How It Works</a>
+              <a href="#how-it-works">How It Works</a>
               <a href="#features">Features</a>
-              <a href="#pricing">Pricing</a>
+              <Link to="/pricing">Pricing</Link>
             </div>
             
             <div className="footer-column">
               <h4>Company</h4>
               <a href="#about">About Poossh Stamp</a>
-              <a href="#contact">Contact</a>
+              <a href="mailto:contact@poossh.com">Contact</a>
               <a href="#blog">Blog</a>
             </div>
             
             <div className="footer-column">
               <h4>Resources</h4>
-              <a href="#subscription">Subscription Info</a>
-              <a href="#help">Help Center</a>
-              <a href="/login">Log In</a>
+              <Link to="/pricing">Subscription Info</Link>
+              <a href="mailto:contact@poossh.com">Help Center</a>
+              <Link to="/login">Log In</Link>
             </div>
           </div>
         </div>

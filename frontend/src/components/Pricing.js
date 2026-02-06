@@ -145,23 +145,23 @@ function Pricing() {
           <div className="footer-links">
             <div className="footer-column">
               <h4>Product</h4>
+              <Link to="/#how-it-works">How It Works</Link>
+              <Link to="/#features">Features</Link>
               <Link to="/pricing">Pricing</Link>
-              <a href="#features">Features</a>
-              <a href="#how-it-works">How it Works</a>
             </div>
             
             <div className="footer-column">
               <h4>Company</h4>
-              <a href="#about">About Poossh Stamp</a>
-              <a href="#contact">Contact</a>
-              <a href="#blog">Blog</a>
+              <Link to="/#about">About Poossh Stamp</Link>
+              <a href="mailto:contact@poossh.com">Contact</a>
+              <Link to="/#blog">Blog</Link>
             </div>
             
             <div className="footer-column">
               <h4>Resources</h4>
-              <a href="#help">Help Center</a>
+              <Link to="/pricing">Subscription Info</Link>
+              <a href="mailto:contact@poossh.com">Help Center</a>
               <Link to="/login">Log In</Link>
-              <Link to="/signup">Sign Up</Link>
             </div>
           </div>
         </div>
