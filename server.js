@@ -6,18 +6,25 @@ require('dotenv').config({ path: path.join(__dirname, 'backend', '.env') });
 const merchantsRoutes = require('./routes/merchants');
 const analyticsRoutes = require('./routes/analytics');
 const authRoutes = require('./routes/auth');
+const stripeRoutes = require('./routes/stripe');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
+
+// Stripe webhook needs raw body - apply before express.json()
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
+// JSON parsing for all other routes
 app.use(express.json());
 
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/merchants', merchantsRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

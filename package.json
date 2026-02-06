@@ -24,7 +24,8 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.3",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "stripe": "^20.3.1"
   },
   "keywords": [
     "loyalty",

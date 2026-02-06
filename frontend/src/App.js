@@ -5,6 +5,8 @@ import LandingPage from './components/LandingPage';
 import Pricing from './components/Pricing';
 import Login from './components/Login';
 import Signup from './components/Signup';
+import PlanSelection from './components/PlanSelection';
+import SubscriptionSuccess from './components/SubscriptionSuccess';
 import Setup from './components/Setup';
 import Dashboard from './components/Dashboard';
 import MyCards from './components/MyCards';
@@ -23,6 +25,22 @@ function App() {
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route 
+              path="/select-plan" 
+              element={
+                <ProtectedRoute>
+                  <PlanSelection />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/subscription-success" 
+              element={
+                <ProtectedRoute>
+                  <SubscriptionSuccess />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/setup" 
               element={

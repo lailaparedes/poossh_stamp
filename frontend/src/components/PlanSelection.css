@@ -1,0 +1,275 @@
+.plan-selection-container {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.plan-selection-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.logo-icon {
+  font-size: 32px;
+  color: #1d1d1f;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d1d1f;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.plan-header h1 {
+  font-size: 48px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 16px;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.plan-header p {
+  font-size: 18px;
+  color: #86868b;
+  font-weight: 400;
+}
+
+.error-message {
+  background: #fff3f3;
+  border: 1px solid #ff4444;
+  color: #cc0000;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.plan-card {
+  background: #f5f5f7;
+  border: 2px solid #e5e5e7;
+  border-radius: 24px;
+  padding: 40px 32px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.plan-card:hover {
+  border-color: #1d1d1f;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.plan-card-featured {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+}
+
+.plan-card-featured:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
+}
+
+.plan-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plan-card-header {
+  margin-bottom: 32px;
+}
+
+.plan-card-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 16px;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.plan-card-featured h2 {
+  color: white;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.price-amount {
+  font-size: 56px;
+  font-weight: 700;
+  color: #1d1d1f;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+.plan-card-featured .price-amount {
+  color: white;
+}
+
+.price-period {
+  font-size: 18px;
+  color: #86868b;
+  font-weight: 400;
+}
+
+.plan-card-featured .price-period {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.plan-features {
+  margin-bottom: 32px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  font-size: 16px;
+  color: #1d1d1f;
+}
+
+.plan-card-featured .feature-item {
+  color: white;
+}
+
+.feature-icon {
+  font-size: 20px;
+  color: #667eea;
+  font-weight: 700;
+}
+
+.plan-card-featured .feature-icon {
+  color: white;
+}
+
+.btn-select-plan {
+  width: 100%;
+  padding: 16px 32px;
+  background: #1d1d1f;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-select-plan:hover:not(:disabled) {
+  background: #000000;
+  transform: scale(1.02);
+}
+
+.btn-select-plan:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-select-plan-featured {
+  background: white;
+  color: #667eea;
+}
+
+.btn-select-plan-featured:hover:not(:disabled) {
+  background: #f5f5f7;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.plan-footer {
+  text-align: center;
+  padding-top: 40px;
+  border-top: 1px solid #e5e5e7;
+}
+
+.plan-footer p {
+  font-size: 14px;
+  color: #86868b;
+}
+
+.plan-footer a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.plan-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .plan-header h1 {
+    font-size: 36px;
+  }
+
+  .plan-card {
+    padding: 32px 24px;
+  }
+
+  .price-amount {
+    font-size: 48px;
+  }
+}

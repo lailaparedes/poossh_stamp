@@ -73,7 +73,7 @@ function Signup() {
       
       if (loginResult.success) {
         setTimeout(() => {
-          navigate('/setup');
+          navigate('/select-plan');
         }, 100);
       } else {
         navigate('/login');
