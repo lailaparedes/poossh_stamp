@@ -174,7 +174,6 @@ function Dashboard() {
         <NavBar />
         <div className="page-with-navbar dashboard-content">
           <div className="empty-state">
-            <div className="empty-state-icon">🚀</div>
             <h2>Let's Get Started!</h2>
             <p>Create your loyalty stamp card to start engaging with customers</p>
             <button 
@@ -235,10 +234,10 @@ function Dashboard() {
               }}
               title="Refresh data"
             >
-              🔄 Refresh
+              Refresh
             </button>
             <button className="btn-secondary" onClick={() => navigate('/my-cards')}>
-              🎴 My Cards
+              My Cards
             </button>
           </div>
         </div>
@@ -246,9 +245,6 @@ function Dashboard() {
         {dashboardData && (
           <div className="stats-grid">
             <div className="stat-card">
-              <div className="stat-icon active">
-                <span>📇</span>
-              </div>
               <div className="stat-content">
                 <h3>Active Cards</h3>
                 <p className="stat-value">{dashboardData.activeCards}</p>
@@ -257,9 +253,6 @@ function Dashboard() {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon rewards">
-                <span>🎁</span>
-              </div>
               <div className="stat-content">
                 <h3>Total Rewards</h3>
                 <p className="stat-value">{dashboardData.totalRewards}</p>
@@ -268,9 +261,6 @@ function Dashboard() {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon redeemed">
-                <span>✓</span>
-              </div>
               <div className="stat-content">
                 <h3>Redeemed</h3>
                 <p className="stat-value">{dashboardData.redeemedRewards}</p>
@@ -283,9 +273,6 @@ function Dashboard() {
             </div>
 
             <div className="stat-card">
-              <div className="stat-icon pending">
-                <span>⏳</span>
-              </div>
               <div className="stat-content">
                 <h3>Pending</h3>
                 <p className="stat-value">{dashboardData.pendingRewards}</p>
@@ -310,7 +297,7 @@ function Dashboard() {
                   onClick={handleDownloadQR}
                   title="Download QR Code"
                 >
-                  ⬇️ Download
+                  Download
                 </button>
               )}
               <button 
@@ -350,35 +337,35 @@ function Dashboard() {
                 <AreaChart data={newCardsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCards" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#007AFF" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#667eea" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#764ba2" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E5EA" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    stroke="#8E8E93"
+                    stroke="#86868b"
                     style={{ fontSize: '12px' }}
                   />
                   <YAxis 
-                    stroke="#8E8E93"
+                    stroke="#86868b"
                     style={{ fontSize: '12px' }}
                     allowDecimals={false}
                   />
                   <Tooltip 
                     labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     contentStyle={{
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #E5E5EA',
-                      borderRadius: '8px',
+                      background: 'white',
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                      borderRadius: '12px',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="count" 
-                    stroke="#007AFF" 
+                    stroke="#667eea" 
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorCards)"
@@ -397,35 +384,35 @@ function Dashboard() {
                 <AreaChart data={stampActivityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorStamps" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#5856D6" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#5856D6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#667eea" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#764ba2" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E5EA" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    stroke="#8E8E93"
+                    stroke="#86868b"
                     style={{ fontSize: '12px' }}
                   />
                   <YAxis 
-                    stroke="#8E8E93"
+                    stroke="#86868b"
                     style={{ fontSize: '12px' }}
                     allowDecimals={false}
                   />
                   <Tooltip 
                     labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                     contentStyle={{
-                      background: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #E5E5EA',
-                      borderRadius: '8px',
+                      background: 'white',
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                      borderRadius: '12px',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                     }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="stamps" 
-                    stroke="#5856D6" 
+                    stroke="#667eea" 
                     strokeWidth={2.5}
                     fillOpacity={1}
                     fill="url(#colorStamps)"
