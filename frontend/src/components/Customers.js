@@ -152,16 +152,6 @@ function Customers() {
     console.log('Export customers');
   };
   
-  const handleAddStamp = async (cardId) => {
-    try {
-      // TODO: Implement add stamp functionality
-      console.log('Add stamp to card:', cardId);
-      alert('Add stamp functionality coming soon!');
-    } catch (err) {
-      console.error('Error adding stamp:', err);
-    }
-  };
-  
   const getTotalVisits = (customer) => {
     // Calculate based on stamps given (estimate)
     return customer.cards.reduce((sum, card) => {
@@ -381,13 +371,6 @@ function Customers() {
                     </div>
                   ))}
                 </div>
-                
-                <button 
-                  className="btn-add-stamp"
-                  onClick={() => handleAddStamp(selectedCustomer.cards[0]?.cardId)}
-                >
-                  Add Stamp
-                </button>
               </div>
             )}
           </div>
