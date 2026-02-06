@@ -10,6 +10,7 @@ function Profile() {
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [merchantCount, setMerchantCount] = useState(0);
   
   const [formData, setFormData] = useState({
     businessName: '',
@@ -20,12 +21,26 @@ function Profile() {
   });
 
   useEffect(() => {
+    const fetchMerchantCount = async () => {
+      try {
+        const response = await axios.get('/api/merchants');
+        setMerchantCount(response.data.data?.length || 0);
+      } catch (err) {
+        console.error('Error fetching merchant count:', err);
+      }
+    };
+
     if (user) {
+      // Use merchant business name if available, otherwise use user's stored business name
+      const businessName = user.merchant?.business_name || user.businessName || '';
+      
       setFormData(prev => ({
         ...prev,
-        businessName: user.businessName || '',
+        businessName: businessName,
         email: user.email || ''
       }));
+
+      fetchMerchantCount();
     }
   }, [user]);
 
@@ -98,9 +113,9 @@ function Profile() {
           {/* Header */}
           <div className="profile-header">
             <div className="profile-avatar">
-              <span>{user?.businessName?.charAt(0).toUpperCase() || '?'}</span>
+              <span>{(user?.merchant?.business_name || user?.businessName || '?').charAt(0).toUpperCase()}</span>
             </div>
-            <h1>{user?.businessName || 'Profile'}</h1>
+            <h1>{user?.merchant?.business_name || user?.businessName || 'Profile'}</h1>
             <p className="profile-email">{user?.email}</p>
           </div>
 
@@ -220,14 +235,12 @@ function Profile() {
           {/* Account Stats */}
           <div className="profile-stats">
             <div className="stat-card">
-              <span className="stat-icon">🎴</span>
               <div className="stat-content">
                 <p className="stat-label">Active Cards</p>
-                <p className="stat-value">{user?.activeMerchantId ? '1' : '0'}</p>
+                <p className="stat-value">{merchantCount}</p>
               </div>
             </div>
             <div className="stat-card">
-              <span className="stat-icon">📅</span>
               <div className="stat-content">
                 <p className="stat-label">Member Since</p>
                 <p className="stat-value">
