@@ -70,36 +70,40 @@ function Setup() {
 
   return (
     <div className="setup-container">
-      <div className="setup-card">
-        <div className="setup-header">
-          <h1>Welcome to Poossh Stamp!</h1>
-          <p>Let's set up your loyalty rewards program</p>
-          <button className="logout-link" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+      {/* Header */}
+      <div className="setup-header">
+        <h1>Welcome to Poossh Stamp!</h1>
+        <p className="header-subtitle">Let's set up your loyalty rewards program</p>
+        <button className="btn-logout" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
 
+      {/* Main Content Card */}
+      <div className="setup-card">
         <div className="setup-content">
+          {/* Welcome Section */}
           <div className="welcome-section">
             <div className="welcome-icon">🎉</div>
             <h2>Let's Get Started</h2>
             <p>
-              Create your digital stamp card that customers will see in the Poossh Stamp app.
-              Once you're done, customers can start collecting stamps at your business!
+              Create your digital stamp card that customers will see in the Poossh Stamp 
+              app. Once you're done, customers can start collecting stamps at your 
+              business!
             </p>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit} className="setup-form">
             {error && (
               <div className="error-message">
-                {error}
+                ⚠️ {error}
               </div>
             )}
 
+            {/* Stamps Required */}
             <div className="form-group">
-              <label htmlFor="stampsRequired">
-                How many stamps to earn a reward? *
-              </label>
+              <label>How many stamps to earn a reward? *</label>
               <div className="stamps-selector">
                 {[5, 8, 10, 12, 15].map(num => (
                   <button
@@ -113,13 +117,12 @@ function Setup() {
                   </button>
                 ))}
               </div>
-              <small>Most businesses choose 10 stamps</small>
+              <small className="hint">Most businesses choose 10 stamps</small>
             </div>
 
+            {/* Reward Description */}
             <div className="form-group">
-              <label htmlFor="rewardDescription">
-                What reward do customers get? *
-              </label>
+              <label htmlFor="rewardDescription">What reward do customers get? *</label>
               <input
                 id="rewardDescription"
                 name="rewardDescription"
@@ -130,9 +133,10 @@ function Setup() {
                 required
                 disabled={loading}
               />
-              <small>Keep it short and clear</small>
+              <small className="hint">Keep it short and clear</small>
             </div>
 
+            {/* Brand Color */}
             <div className="form-group">
               <label>Choose your brand color *</label>
               <div className="color-selector">
@@ -146,12 +150,15 @@ function Setup() {
                     title={color.name}
                     disabled={loading}
                   >
-                    {formData.color === color.value && '✓'}
+                    {formData.color === color.value && (
+                      <span className="checkmark">✓</span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Logo */}
             <div className="form-group">
               <label htmlFor="logo">Logo (Optional)</label>
               <input
@@ -163,23 +170,32 @@ function Setup() {
                 placeholder="Emoji or image URL (e.g., ☕ or https://...)"
                 disabled={loading}
               />
-              <small>Use an emoji or paste an image URL</small>
+              <small className="hint">Use an emoji or paste an image URL</small>
             </div>
 
-            <div className="preview-card" style={{ borderLeftColor: formData.color }}>
-              <div className="preview-header">
+            {/* Preview Card */}
+            <div className="preview-section">
+              <div className="preview-card" style={{ borderColor: formData.color }}>
                 <div className="preview-logo">
                   {formData.logo || '🏪'}
                 </div>
-                <div>
-                  <h3>{user?.fullName || 'Your Business'}</h3>
+                <div className="preview-info">
+                  <h3>{user?.fullName || user?.name || 'Punch'}</h3>
                   <p>{formData.stampsRequired} stamps = {formData.rewardDescription || 'Your reward'}</p>
                 </div>
               </div>
             </div>
 
-            <button type="submit" className="setup-button" disabled={loading}>
-              {loading ? 'Creating...' : 'Create My Loyalty Program'}
+            {/* Submit Button */}
+            <button type="submit" className="btn-submit" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Creating...
+                </>
+              ) : (
+                'Create My Loyalty Program'
+              )}
             </button>
           </form>
         </div>
