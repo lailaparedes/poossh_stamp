@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NavBar from './NavBar';
 import './Customers.css';
 
 function Customers() {
-  const navigate = useNavigate();
   
   const [allCustomers, setAllCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -180,13 +178,8 @@ function Customers() {
         {/* Header with back button and export */}
         <div className="customers-header">
           <div className="header-left">
-            <button className="btn-back" onClick={() => navigate('/dashboard')}>
-              ←
-            </button>
-            <div>
-              <h1>Customers</h1>
-              <p className="customer-count-text">{filteredCustomers.length} customers found</p>
-            </div>
+            <h1>Customers</h1>
+            <p className="customer-count-text">{filteredCustomers.length} customers found</p>
           </div>
         </div>
 
