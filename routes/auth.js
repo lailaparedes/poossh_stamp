@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/supabase');
+const authenticateMerchant = require('../middleware/auth');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const TOKEN_EXPIRY = '7d'; // 7 days
@@ -308,6 +309,159 @@ router.post('/logout', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       error: 'Logout failed' 
+    });
+  }
+});
+
+// Update profile endpoint
+router.put('/profile', authenticateMerchant, async (req, res) => {
+  try {
+    const { businessName, currentPassword, newPassword } = req.body;
+    const userId = req.merchant.userId;
+
+    console.log('📝 Profile Update Request - User:', userId);
+    console.log('Business Name:', businessName);
+
+    // Validate required fields
+    if (!businessName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Business name is required'
+      });
+    }
+
+    // Get current user data
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('User fetch error:', userError);
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // If password change requested, verify current password
+    if (currentPassword && newPassword) {
+      const passwordMatch = await bcrypt.compare(currentPassword, user.password_hash);
+      
+      if (!passwordMatch) {
+        return res.status(400).json({
+          success: false,
+          error: 'Current password is incorrect'
+        });
+      }
+
+      // Validate new password
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          success: false,
+          error: 'New password must be at least 8 characters'
+        });
+      }
+
+      // Hash new password and update
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      
+      const { error: passwordError } = await supabase
+        .from('merchant_portal_users')
+        .update({ password_hash: newPasswordHash })
+        .eq('id', userId);
+
+      if (passwordError) {
+        console.error('Password update error:', passwordError);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to update password'
+        });
+      }
+    }
+
+    // Update business name in merchant_portal_users table
+    console.log('Updating business_name to:', businessName);
+    const { error: updateError } = await supabase
+      .from('merchant_portal_users')
+      .update({ business_name: businessName })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Business name update error:', updateError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update business name: ' + updateError.message
+      });
+    }
+
+    // Get updated user data with merchant info
+    const { data: updatedUser, error: fetchError } = await supabase
+      .from('merchant_portal_users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !updatedUser) {
+      console.error('Fetch updated user error:', fetchError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to fetch updated profile'
+      });
+    }
+
+    // Get merchant data if user has a merchant_id
+    if (updatedUser.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchants')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', updatedUser.merchant_id)
+        .single();
+      
+      updatedUser.merchant = merchant;
+    } else {
+      updatedUser.merchant = null;
+    }
+
+    // Generate new token with updated info
+    const tokenPayload = {
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      merchantId: updatedUser.merchant_id,
+      role: updatedUser.role
+    };
+
+    const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
+
+    // Update session with new token
+    await supabase
+      .from('merchant_portal_sessions')
+      .update({ token: newToken })
+      .eq('user_id', userId);
+
+    console.log('✅ Profile updated successfully');
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          fullName: updatedUser.full_name,
+          businessName: updatedUser.business_name || updatedUser.full_name,
+          role: updatedUser.role,
+          createdAt: updatedUser.created_at,
+          merchant: updatedUser.merchant
+        },
+        token: newToken
+      }
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Profile update failed: ' + error.message
     });
   }
 });
