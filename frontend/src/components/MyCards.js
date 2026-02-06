@@ -6,36 +6,45 @@ import Sidebar from './Sidebar';
 import './MyCards.css';
 
 function MyCards() {
-  const { updateToken } = useAuth();
+  const { user, updateToken } = useAuth();
   const navigate = useNavigate();
   
   const [merchants, setMerchants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingCard, setEditingCard] = useState(null);
-  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  // Form state
+  // New card form state
   const [formData, setFormData] = useState({
     businessName: '',
-    description: '',
+    category: 'Food & Beverage',
     stampsRequired: 10,
     rewardDescription: '',
-    expiryDays: 90,
-    color: '#FF6B35', // Orange default
-    logo: '☕',
-    category: 'Coffee'
+    color: '#667eea',
+    logo: '🏪'
   });
 
-  const colorOptions = [
-    { name: 'Orange', value: '#FF6B35' },
-    { name: 'Green', value: '#34C759' },
-    { name: 'Purple', value: '#9D4EDD' },
-    { name: 'Blue', value: '#007AFF' },
-    { name: 'Red', value: '#FF3B30' },
-    { name: 'Violet', value: '#7B68EE' }
+  const categories = [
+    'Food & Beverage',
+    'Retail',
+    'Services',
+    'Health & Wellness',
+    'Entertainment',
+    'Other'
   ];
+
+  const colorOptions = [
+    { name: 'Purple', value: '#667eea' },
+    { name: 'Blue', value: '#4299e1' },
+    { name: 'Green', value: '#48bb78' },
+    { name: 'Orange', value: '#ed8936' },
+    { name: 'Red', value: '#f56565' },
+    { name: 'Pink', value: '#ed64a6' }
+  ];
+
+  const emojiOptions = ['🏪', '☕', '🍕', '🍔', '🍰', '💇', '🏋️', '🎬', '🛍️', '🌮'];
 
   useEffect(() => {
     fetchMerchants();
@@ -44,6 +53,7 @@ function MyCards() {
   const fetchMerchants = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await axios.get('/api/merchants');
       setMerchants(response.data.data || []);
       setLoading(false);
@@ -54,113 +64,89 @@ function MyCards() {
     }
   };
 
-  const handleOpenCreate = () => {
-    setFormData({
-      businessName: '',
-      description: '',
-      stampsRequired: 10,
-      rewardDescription: '',
-      expiryDays: 90,
-      color: '#FF6B35',
-      logo: '☕',
-      category: 'Coffee'
-    });
-    setEditingCard(null);
-    setShowCreateModal(true);
-  };
-
-  const handleOpenEdit = (merchant) => {
-    setFormData({
-      businessName: merchant.name,
-      description: merchant.category || '',
-      stampsRequired: merchant.stamps_required,
-      rewardDescription: merchant.reward_description || '',
-      expiryDays: 90,
-      color: merchant.color || '#FF6B35',
-      logo: merchant.logo || '☕',
-      category: merchant.category || 'Coffee'
-    });
-    setEditingCard(merchant);
-    setShowCreateModal(true);
-    setMenuOpenId(null);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleCreateCard = async (e) => {
     e.preventDefault();
     try {
-      if (editingCard) {
-        // Update existing card
-        await axios.put(`/api/merchants/${editingCard.id}`, {
-          name: formData.businessName,
-          category: formData.description,
-          stamps_required: formData.stampsRequired,
-          reward_description: formData.rewardDescription,
-          color: formData.color,
-          logo: formData.logo
-        });
-      } else {
-        // Create new card
-        await axios.post('/api/merchants/create', {
-          businessName: formData.businessName,
-          category: formData.description,
-          stampsRequired: formData.stampsRequired,
-          rewardDescription: formData.rewardDescription,
-          color: formData.color,
-          logo: formData.logo
-        });
-      }
+      setLoading(true);
+      await axios.post('/api/merchants/create', formData);
       
-      setShowCreateModal(false);
+      // Reset form and close
+      setFormData({
+        businessName: '',
+        category: 'Food & Beverage',
+        stampsRequired: 10,
+        rewardDescription: '',
+        color: '#667eea',
+        logo: '🏪'
+      });
+      setShowCreateForm(false);
+      
+      // Refresh list
       await fetchMerchants();
+      
+      // Show success message
+      setSuccessMessage('Loyalty card created successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      console.error('Error saving card:', err);
-      setError(err.response?.data?.error || 'Failed to save loyalty card');
+      console.error('Error creating card:', err);
+      setError(err.response?.data?.error || 'Failed to create loyalty card');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (merchantId) => {
-    if (!window.confirm('Are you sure you want to delete this loyalty card?')) {
+  const handleDeleteCard = async (merchantId) => {
+    if (!window.confirm('Are you sure you want to delete this loyalty card? This action cannot be undone.')) {
       return;
     }
 
     try {
+      setDeletingId(merchantId);
       await axios.delete(`/api/merchants/${merchantId}`);
       await fetchMerchants();
-      setMenuOpenId(null);
+      
+      // Refresh user data
+      await axios.get('/api/auth/verify');
+      
+      // Show success message
+      setSuccessMessage('Loyalty card deleted successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error deleting card:', err);
-      setError('Failed to delete card');
+      setError(err.response?.data?.error || 'Failed to delete loyalty card');
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setDeletingId(null);
     }
   };
 
   const handleSetActive = async (merchantId) => {
     try {
       const response = await axios.post(`/api/merchants/set-active/${merchantId}`);
+      
+      // If we got a new token, update it properly through AuthContext
       if (response.data.data?.token) {
         await updateToken(response.data.data.token);
+        
+        console.log('Token updated, navigating to dashboard for merchant:', merchantId);
+        
+        // Navigate to dashboard (no page reload needed since token is already updated)
+        navigate('/dashboard');
+      } else {
+        console.warn('No token in response, using fallback redirect');
+        // Fallback if no token returned
         navigate('/dashboard');
       }
     } catch (err) {
       console.error('Error setting active card:', err);
-      alert('Failed to set active card');
+      alert(err.response?.data?.error || 'Failed to set active card');
     }
-  };
-
-  const renderStampSlots = (stampsRequired, color) => {
-    const slots = [];
-    for (let i = 0; i < Math.min(stampsRequired, 10); i++) {
-      slots.push(
-        <div key={i} className="stamp-slot" style={{ borderColor: color }}>
-          <span>{i + 1}</span>
-        </div>
-      );
-    }
-    return slots;
   };
 
   if (loading && merchants.length === 0) {
     return (
-      <div className="my-cards-container">
+      <>
         <Sidebar />
         <div className="my-cards-content">
           <div className="loading-container">
@@ -168,7 +154,7 @@ function MyCards() {
             <p>Loading your loyalty cards...</p>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -176,233 +162,206 @@ function MyCards() {
     <div className="my-cards-container">
       <Sidebar />
       
-      <div className="my-cards-content">
-        {/* Header */}
-        <div className="published-cards-header">
-          <div>
-            <h1>Published Loyalty Cards</h1>
-            <p className="subtitle">Manage your active stamp card programs</p>
-          </div>
-          <button className="btn-new-card" onClick={handleOpenCreate}>
-            + New Card
-          </button>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="error-banner">
-            ⚠️ {error}
-            <button onClick={() => setError(null)}>×</button>
-          </div>
-        )}
-
-        {/* Cards Grid */}
-        {merchants.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">🎴</div>
-            <h2>No Loyalty Cards Yet</h2>
-            <p>Create your first loyalty card to start rewarding customers</p>
-            <button className="btn-create-first" onClick={handleOpenCreate}>
-              + Create Your First Card
-            </button>
-          </div>
-        ) : (
-          <div className="cards-grid-horizontal">
-            {merchants.map((merchant) => (
-              <div key={merchant.id} className="loyalty-card-horizontal" style={{ borderTopColor: merchant.color || '#FF6B35' }}>
-                {/* Card Header */}
-                <div className="card-horizontal-header">
-                  <h3 style={{ color: merchant.color || '#FF6B35' }}>{merchant.name}</h3>
-                  <div className="card-menu">
-                    <button 
-                      className="menu-trigger"
-                      onClick={() => setMenuOpenId(menuOpenId === merchant.id ? null : merchant.id)}
-                    >
-                      ⋮
-                    </button>
-                    {menuOpenId === merchant.id && (
-                      <div className="menu-dropdown">
-                        <button onClick={() => handleOpenEdit(merchant)}>
-                          ✏️ Edit
-                        </button>
-                        <button onClick={() => handleSetActive(merchant.id)}>
-                          👁️ View Dashboard
-                        </button>
-                        <button onClick={() => handleDelete(merchant.id)} className="danger">
-                          🗑️ Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className="card-description">
-                  Buy {merchant.stamps_required} {merchant.category?.toLowerCase() || 'items'}, get 1 free
-                </p>
-
-                {/* Stamp Slots */}
-                <div className="stamp-slots-container">
-                  {renderStampSlots(merchant.stamps_required, merchant.color || '#FF6B35')}
-                </div>
-
-                {/* Stats */}
-                <div className="card-stats-footer">
-                  <div className="stat-item">
-                    <span className="stat-icon">👥</span>
-                    <div>
-                      <span className="stat-label">Active Users</span>
-                      <span className="stat-value">{merchant.active_users || 0}</span>
-                    </div>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-icon">🎫</span>
-                    <div>
-                      <span className="stat-label">Total Stamps</span>
-                      <span className="stat-value">{merchant.total_stamps || 0}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Create/Edit Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content-large" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-layout">
-              {/* Left Side - Form */}
-              <div className="modal-form-section">
-                <h2>Card Details</h2>
-                <form onSubmit={handleSubmit}>
-                  <div className="form-group">
-                    <label>Card Name</label>
-                    <input
-                      type="text"
-                      value={formData.businessName}
-                      onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                      placeholder="e.g., Coffee Lover Card"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Description</label>
-                    <input
-                      type="text"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="e.g., Buy 10 coffees, get 1 free"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Number of Stamps Required</label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={formData.stampsRequired}
-                      onChange={(e) => setFormData({ ...formData, stampsRequired: parseInt(e.target.value) })}
-                      required
-                    />
-                    <span className="form-hint">Maximum 20 stamps</span>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Reward Description</label>
-                    <textarea
-                      value={formData.rewardDescription}
-                      onChange={(e) => setFormData({ ...formData, rewardDescription: e.target.value })}
-                      placeholder="e.g., One free coffee of any size"
-                      rows="3"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Card Expiry (days)</label>
-                    <select
-                      value={formData.expiryDays}
-                      onChange={(e) => setFormData({ ...formData, expiryDays: parseInt(e.target.value) })}
-                    >
-                      <option value="30">30 days</option>
-                      <option value="60">60 days</option>
-                      <option value="90">90 days</option>
-                      <option value="180">180 days</option>
-                      <option value="365">1 year</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Card Color Theme</label>
-                    <div className="color-picker-grid">
-                      {colorOptions.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          className={`color-option ${formData.color === color.value ? 'selected' : ''}`}
-                          style={{ backgroundColor: color.value }}
-                          onClick={() => setFormData({ ...formData, color: color.value })}
-                          title={color.name}
-                        >
-                          {formData.color === color.value && <span className="check-icon">✓</span>}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="modal-actions-bottom">
-                    <button type="button" className="btn-cancel" onClick={() => setShowCreateModal(false)}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn-create">
-                      📄 {editingCard ? 'Update Card' : 'Create Card'}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              {/* Right Side - Preview */}
-              <div className="modal-preview-section">
-                <h2>Card Preview</h2>
-                <div className="card-preview-container">
-                  <div className="preview-card" style={{ backgroundColor: formData.color }}>
-                    <h3>{formData.businessName || 'Card Name'}</h3>
-                    <p className="preview-description">
-                      {formData.description || 'Card description will appear here'}
-                    </p>
-                    <div className="preview-stamp-slots">
-                      {renderStampSlots(formData.stampsRequired, '#ffffff')}
-                    </div>
-                  </div>
-
-                  <div className="preview-reward-box">
-                    <strong>Reward:</strong>
-                    <p>{formData.rewardDescription || 'Reward description will appear here'}</p>
-                    <small>Expires after {formData.expiryDays} days</small>
-                  </div>
-                </div>
-
-                {/* Tips Section */}
-                <div className="tips-section">
-                  <h3>Tips for Success</h3>
-                  <ul>
-                    <li>Keep card names short and memorable</li>
-                    <li>Clearly state the reward customers will earn</li>
-                    <li>10 stamps is the most popular configuration</li>
-                    <li>Choose colors that match your brand</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+      {successMessage && (
+        <div className="success-notification">
+          <span className="success-icon">✓</span>
+          {successMessage}
         </div>
       )}
+      
+      {error && (
+        <div className="error-notification">
+          <span className="error-icon">✕</span>
+          {error}
+        </div>
+      )}
+
+      <div className="my-cards-content">
+        <div className="my-cards-header">
+          <div className="my-cards-header-info">
+            <h1>My Loyalty Cards</h1>
+            <p>Manage all your loyalty stamp card programs</p>
+          </div>
+          <div className="my-cards-header-actions">
+            <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
+              Dashboard
+            </button>
+          </div>
+        </div>
+
+        <button 
+          className="create-card-button" 
+          onClick={() => setShowCreateForm(!showCreateForm)}
+        >
+          {showCreateForm ? '✕ Cancel' : '+ Create New Card'}
+        </button>
+
+        {showCreateForm && (
+          <div className="create-form">
+            <h3>Create New Loyalty Card</h3>
+            <form onSubmit={handleCreateCard}>
+              <div className="form-grid">
+            <div className="form-group">
+              <label>Business Name *</label>
+              <input
+                type="text"
+                value={formData.businessName}
+                onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                required
+                placeholder="e.g., Coffee Shop"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Category *</label>
+              <select
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                required
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Stamps Required *</label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={formData.stampsRequired}
+                onChange={(e) => setFormData({ ...formData, stampsRequired: parseInt(e.target.value) })}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Reward Description *</label>
+              <input
+                type="text"
+                value={formData.rewardDescription}
+                onChange={(e) => setFormData({ ...formData, rewardDescription: e.target.value })}
+                required
+                placeholder="e.g., Free coffee"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Card Color</label>
+              <div className="color-picker">
+                {colorOptions.map(color => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    className={`color-option ${formData.color === color.value ? 'active' : ''}`}
+                    style={{ backgroundColor: color.value }}
+                    onClick={() => setFormData({ ...formData, color: color.value })}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Logo Emoji</label>
+              <div className="emoji-picker">
+                {emojiOptions.map(emoji => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className={`emoji-option ${formData.logo === emoji ? 'active' : ''}`}
+                    onClick={() => setFormData({ ...formData, logo: emoji })}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+              </div>
+              <div className="form-actions">
+                <button type="button" className="btn-cancel" onClick={() => setShowCreateForm(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-submit" disabled={loading}>
+                  {loading ? 'Creating...' : 'Create Card'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        <div className="cards-grid">
+          {merchants.length === 0 ? (
+            <div className="no-cards">
+              <div className="no-cards-icon">🎴</div>
+              <h3>No Loyalty Cards Yet</h3>
+              <p>Create your first loyalty stamp card to get started</p>
+            </div>
+          ) : (
+            merchants.map(merchant => (
+              <div 
+                key={merchant.id} 
+                className={`loyalty-card ${user?.merchant?.id === merchant.id ? 'active' : ''}`}
+              >
+                {user?.merchant?.id === merchant.id && (
+                  <span className="active-badge">Active</span>
+                )}
+                
+                <div className="card-header">
+                  <div className="card-logo">
+                    {merchant.logo && !merchant.logo.includes('http') ? merchant.logo : '🏪'}
+                  </div>
+                  <div className="card-info">
+                    <h3>{merchant.name}</h3>
+                    <p className="card-category">{merchant.category}</p>
+                  </div>
+                </div>
+
+                <div className="card-details">
+                  <div className="card-stamps">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                    <span>{merchant.stamps_required} stamps</span>
+                  </div>
+                  <div className="card-reward">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 6L13.5 9L17 9.5L14.5 12L15 15.5L12 13.5L9 15.5L9.5 12L7 9.5L10.5 9L12 6Z"/>
+                    </svg>
+                    <span>{merchant.reward_description}</span>
+                  </div>
+                </div>
+
+                <div className="card-actions">
+                  <button
+                    className="btn-view-dashboard"
+                    onClick={() => handleSetActive(merchant.id)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    View Dashboard
+                  </button>
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDeleteCard(merchant.id)}
+                    disabled={deletingId === merchant.id}
+                    title="Delete card"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
