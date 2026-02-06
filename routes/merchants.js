@@ -710,7 +710,7 @@ router.put('/:merchantId', authenticateMerchant, async (req, res) => {
 
     // Prepare update data
     const updateData = {
-      business_name: businessName,
+      name: businessName,  // Column is 'name' not 'business_name'
       updated_at: new Date().toISOString()
     };
 
