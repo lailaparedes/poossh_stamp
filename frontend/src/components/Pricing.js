@@ -44,23 +44,25 @@ function Pricing() {
           </div>
 
           <div className="pricing-cards">
-            {/* Free Plan */}
+            {/* Starter Plan */}
             <div className="pricing-card">
               <div className="card-header">
                 <h3>Starter</h3>
                 <div className="price">
                   <span className="currency">$</span>
-                  <span className="amount">0</span>
+                  <span className="amount">45</span>
+                  <span className="period">/mo</span>
                 </div>
               </div>
               <ul className="features-list">
-                <li>✓ Up to 100 stamps</li>
+                <li>✓ Unlimited stamps</li>
+                <li>✓ Single stamp card</li>
                 <li>✓ Single location</li>
                 <li>✓ Basic analytics</li>
                 <li>✓ Email support</li>
               </ul>
               <button className="btn-plan btn-plan-free" onClick={() => navigate('/signup')}>
-                Start Free
+                Get Started
               </button>
             </div>
 
@@ -71,41 +73,19 @@ function Pricing() {
                 <h3>Pro</h3>
                 <div className="price">
                   <span className="currency">$</span>
-                  <span className="amount">19</span>
+                  <span className="amount">100</span>
                   <span className="period">/mo</span>
                 </div>
               </div>
               <ul className="features-list">
                 <li>✓ Unlimited stamps</li>
+                <li>✓ Multiple stamp cards</li>
                 <li>✓ Multiple locations</li>
                 <li>✓ Advanced insights</li>
-                <li>✓ Custom rewards</li>
-                <li>✓ Priority support</li>
-                <li>✓ Custom branding</li>
+                <li>✓ Email support</li>
               </ul>
               <button className="btn-plan btn-plan-pro" onClick={() => navigate('/signup')}>
                 Get Pro
-              </button>
-            </div>
-
-            {/* Enterprise Plan */}
-            <div className="pricing-card">
-              <div className="card-header">
-                <h3>Enterprise</h3>
-                <div className="price">
-                  <span className="amount-text">Custom</span>
-                </div>
-              </div>
-              <ul className="features-list">
-                <li>✓ Everything in Pro</li>
-                <li>✓ Unlimited locations</li>
-                <li>✓ White-label solution</li>
-                <li>✓ API access</li>
-                <li>✓ Dedicated support</li>
-                <li>✓ Custom integrations</li>
-              </ul>
-              <button className="btn-plan btn-plan-free" onClick={() => navigate('/signup')}>
-                Contact Sales
               </button>
             </div>
           </div>
