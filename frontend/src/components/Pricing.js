@@ -28,9 +28,10 @@ function Pricing() {
         <div className="pricing-hero-content">
           <h1>Choose your plan.</h1>
           <p>Flexible subscriptions for every business.</p>
-          <button className="btn-get-plans" onClick={() => navigate('/signup')}>
-            Get Plans
-          </button>
+          <a href="mailto:contact@poossh.com" className="btn-contact-support">
+            Contact Support
+          </a>
+          <p className="contact-subtitle">Questions about plans? Email us at contact@poossh.com</p>
         </div>
       </section>
 
