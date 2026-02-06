@@ -68,8 +68,7 @@ function Pricing() {
             </div>
 
             {/* Pro Plan */}
-            <div className="pricing-card pricing-card-featured">
-              <div className="featured-badge">Popular</div>
+            <div className="pricing-card">
               <div className="card-header">
                 <h3>Pro</h3>
                 <div className="price">
