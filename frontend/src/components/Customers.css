@@ -88,7 +88,7 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 
 .search-input-wrapper {
@@ -106,6 +106,7 @@
   transition: all 0.2s ease;
   background: white;
   color: #1d1d1f;
+  height: 48px;
 }
 
 .search-input:focus {
@@ -125,9 +126,11 @@
 }
 
 .filter-wrapper label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1d1d1f;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .card-filter-select {
@@ -143,6 +146,7 @@
   transition: all 0.2s ease;
   font-weight: 500;
   min-width: 200px;
+  height: 48px;
 }
 
 .card-filter-select:focus {
