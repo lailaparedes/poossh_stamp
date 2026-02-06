@@ -61,19 +61,7 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    // Store business info temporarily (we'll use it during setup)
-    const { error: tempDataError } = await supabase
-      .from('merchant_onboarding_data')
-      .insert([{
-        user_id: newUser.id,
-        business_name: businessName,
-        phone_number: phoneNumber,
-        category: category
-      }]);
-
-    if (tempDataError) {
-      console.error('Temp data error:', tempDataError);
-    }
+    console.log('✅ User created successfully:', newUser.id);
 
     res.json({
       success: true,

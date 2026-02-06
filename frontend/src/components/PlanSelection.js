@@ -14,7 +14,9 @@ function PlanSelection() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('merchantToken');
+      
+      console.log('Token retrieved:', token ? 'YES' : 'NO');
       
       const response = await fetch('/api/stripe/create-checkout-session', {
         method: 'POST',

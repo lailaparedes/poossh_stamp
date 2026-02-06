@@ -15,7 +15,7 @@ router.post('/create-checkout-session', authenticateMerchant, async (req, res) =
     const { plan } = req.body;
     const userId = req.merchant.userId;
 
-    console.log('Creating checkout session for user:', userId, 'plan:', plan);
+    console.log('✅ Auth successful - Creating checkout session for user:', userId, 'plan:', plan);
 
     // Validate plan
     if (!plan || (plan !== 'starter' && plan !== 'pro')) {

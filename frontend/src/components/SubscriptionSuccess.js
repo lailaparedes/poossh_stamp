@@ -22,7 +22,7 @@ function SubscriptionSuccess() {
       }
 
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('merchantToken');
         
         const response = await fetch(`/api/stripe/verify-session?session_id=${sessionId}`, {
           headers: {
