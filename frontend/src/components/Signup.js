@@ -86,132 +86,164 @@ function Signup() {
 
   return (
     <div className="signup-container">
-      <div className="signup-card">
-        <div className="signup-header">
-          <h1>Join Poossh Stamp</h1>
-          <p>Create your merchant account</p>
+      {/* Navigation */}
+      <nav className="signup-nav">
+        <div className="nav-content">
+          <Link to="/" className="nav-logo">
+            <span className="logo-icon">🎴</span>
+            <span className="logo-text">Poossh Stamp</span>
+          </Link>
+          <Link to="/login" className="btn-nav-login">
+            Log In
+          </Link>
         </div>
+      </nav>
 
-        <form onSubmit={handleSubmit} className="signup-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="businessName">Business Name *</label>
-              <input
-                id="businessName"
-                name="businessName"
-                type="text"
-                value={formData.businessName}
-                onChange={handleChange}
-                placeholder="Your Coffee Shop"
-                required
-                disabled={loading}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="category">Category *</label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                disabled={loading}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
+      {/* Main Content */}
+      <div className="signup-main">
+        <div className="signup-content">
+          <div className="signup-header">
+            <h1>Create your account</h1>
+            <p>Start your digital loyalty program today.</p>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="ownerName">Your Name *</label>
-            <input
-              id="ownerName"
-              name="ownerName"
-              type="text"
-              value={formData.ownerName}
-              onChange={handleChange}
-              placeholder="John Doe"
-              required
-              disabled={loading}
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="signup-form">
+            {error && (
+              <div className="error-message">
+                ⚠️ {error}
+              </div>
+            )}
 
-          <div className="form-group">
-            <label htmlFor="email">Email Address *</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="your@email.com"
-              required
-              disabled={loading}
-            />
-          </div>
+            <div className="form-section">
+              <h2>Business Information</h2>
+              
+              <div className="form-group">
+                <label htmlFor="businessName">Business Name</label>
+                <input
+                  id="businessName"
+                  name="businessName"
+                  type="text"
+                  value={formData.businessName}
+                  onChange={handleChange}
+                  placeholder="Your Coffee Shop"
+                  required
+                  disabled={loading}
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="phoneNumber">Phone Number</label>
-            <input
-              id="phoneNumber"
-              name="phoneNumber"
-              type="tel"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              placeholder="(555) 123-4567"
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="password">Password *</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Min. 8 characters"
-                required
-                disabled={loading}
-                minLength={8}
-              />
+              <div className="form-group">
+                <label htmlFor="category">Business Category</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                >
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password *</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Re-enter password"
-                required
-                disabled={loading}
-              />
+            <div className="form-section">
+              <h2>Account Details</h2>
+              
+              <div className="form-group">
+                <label htmlFor="ownerName">Your Name</label>
+                <input
+                  id="ownerName"
+                  name="ownerName"
+                  type="text"
+                  value={formData.ownerName}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email Address</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="your@email.com"
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phoneNumber">Phone Number (Optional)</label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="(555) 123-4567"
+                  disabled={loading}
+                />
+              </div>
             </div>
-          </div>
 
-          <button type="submit" className="signup-button" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
-          </button>
-        </form>
+            <div className="form-section">
+              <h2>Security</h2>
+              
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Minimum 8 characters"
+                  required
+                  disabled={loading}
+                  minLength={8}
+                />
+                <span className="input-hint">Use at least 8 characters</span>
+              </div>
 
-        <div className="signup-footer">
-          <p>
-            Already have an account? <Link to="/login">Log in</Link>
-          </p>
+              <div className="form-group">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Re-enter your password"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <button type="submit" className="btn-signup" disabled={loading}>
+              {loading ? (
+                <>
+                  <span className="spinner"></span>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
+
+            <div className="form-footer">
+              <p>
+                Already have an account? <Link to="/login">Log in</Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>
