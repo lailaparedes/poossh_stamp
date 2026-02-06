@@ -11,7 +11,7 @@ function LandingPage() {
       <nav className="landing-nav">
         <div className="nav-container">
           <div className="nav-logo">
-            <span className="logo-icon">🎴</span>
+            <span className="logo-icon">✦</span>
             <span className="logo-text">Poossh Stamp</span>
           </div>
           <div className="nav-links">
@@ -125,7 +125,7 @@ function LandingPage() {
         <div className="footer-container">
           <div className="footer-brand">
             <div className="footer-logo">
-              <span className="logo-icon">🎴</span>
+              <span className="logo-icon">✦</span>
               <span className="logo-text">Poossh Stamp</span>
             </div>
           </div>

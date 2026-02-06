@@ -74,7 +74,7 @@ function Setup() {
       <nav className="setup-nav">
         <div className="nav-content">
           <div className="nav-logo">
-            <span className="logo-icon">🎴</span>
+            <span className="logo-icon">✦</span>
             <span className="logo-text">Poossh Stamp</span>
           </div>
           <button className="btn-nav-logout" onClick={handleLogout}>

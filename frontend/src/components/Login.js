@@ -39,7 +39,7 @@ function Login() {
       <nav className="login-nav">
         <div className="nav-content">
           <Link to="/" className="nav-logo">
-            <span className="logo-icon">🎴</span>
+            <span className="logo-icon">✦</span>
             <span className="logo-text">Poossh Stamp</span>
           </Link>
           <Link to="/signup" className="btn-nav-signup">

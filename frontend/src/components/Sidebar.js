@@ -34,7 +34,7 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <div className="sidebar-logo">🎴</div>
+        <div className="sidebar-logo">✦</div>
         <div className="sidebar-title">
           <h2>Poossh Stamp</h2>
           <p>Merchant Portal</p>
