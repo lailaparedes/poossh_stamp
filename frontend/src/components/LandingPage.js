@@ -141,7 +141,6 @@ function LandingPage() {
               <h4>Company</h4>
               <a href="#about">About Poossh Stamp</a>
               <a href="mailto:contact@poossh.com">Contact</a>
-              <a href="#blog">Blog</a>
             </div>
             
             <div className="footer-column">

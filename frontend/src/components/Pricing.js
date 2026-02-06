@@ -154,7 +154,6 @@ function Pricing() {
               <h4>Company</h4>
               <Link to="/#about">About Poossh Stamp</Link>
               <a href="mailto:contact@poossh.com">Contact</a>
-              <Link to="/#blog">Blog</Link>
             </div>
             
             <div className="footer-column">
