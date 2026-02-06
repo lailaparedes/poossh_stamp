@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './LandingPage.css';
 
 function LandingPage() {
@@ -17,8 +17,8 @@ function LandingPage() {
           <div className="nav-links">
             <a href="#home">Home</a>
             <a href="#features">Features</a>
+            <Link to="/pricing">Pricing</Link>
             <a href="#how-it-works">How it Works</a>
-            <a href="#testimonials">Testimonials</a>
             <a href="#faq">FAQ</a>
           </div>
           <button className="btn-nav-cta" onClick={() => navigate('/signup')}>
