@@ -40,7 +40,6 @@ Shows comprehensive information:
 - Total visits and redemptions (calculated from all cards)
 - Visual stats boxes with gradient backgrounds
 - All active cards with progress bars
-- **"Add Stamp" button** (placeholder for future feature)
 
 ### 6. **Export Functionality**
 - Export button in header (ready for CSV implementation)
@@ -160,11 +159,11 @@ const [availableCards, setAvailableCards] = useState([]); // Unique card types
 ## 🚀 Future Enhancements
 
 ### Short-term
-- [ ] Implement "Add Stamp" functionality
 - [ ] Export to CSV/Excel
 - [ ] Click card to see card-specific details
 - [ ] Edit customer information
 - [ ] Send notifications to customers
+- [ ] Batch operations
 
 ### Long-term
 - [ ] Customer segments and tags
