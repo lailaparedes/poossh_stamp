@@ -44,6 +44,7 @@ router.post('/signup', async (req, res) => {
         email,
         password_hash: passwordHash,
         full_name: ownerName,
+        business_name: businessName,
         role: 'owner',
         is_active: true,
         merchant_id: null // Will be set when they create their loyalty card
@@ -190,7 +191,7 @@ router.post('/login', async (req, res) => {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
-          businessName: user.full_name,
+          businessName: user.business_name || user.full_name,
           role: user.role,
           createdAt: user.created_at,
           merchant: user.merchant
@@ -272,7 +273,7 @@ router.get('/verify', async (req, res) => {
           id: user.id,
           email: user.email,
           fullName: user.full_name,
-          businessName: user.full_name,
+          businessName: user.business_name || user.full_name,
           role: user.role,
           createdAt: user.created_at,
           merchant: user.merchant

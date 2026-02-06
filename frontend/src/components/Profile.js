@@ -31,8 +31,8 @@ function Profile() {
     };
 
     if (user) {
-      // Use merchant name if available, otherwise use user's businessName or fullName
-      const businessName = user.merchant?.name || user.businessName || user.fullName || '';
+      // Use account business name (not individual card names)
+      const businessName = user.businessName || user.fullName || '';
       
       setFormData(prev => ({
         ...prev,
@@ -113,9 +113,9 @@ function Profile() {
           {/* Header */}
           <div className="profile-header">
             <div className="profile-avatar">
-              <span>{(user?.merchant?.name || user?.businessName || user?.fullName || '?').charAt(0).toUpperCase()}</span>
+              <span>{(user?.businessName || user?.fullName || '?').charAt(0).toUpperCase()}</span>
             </div>
-            <h1>{user?.merchant?.name || user?.businessName || user?.fullName || 'Profile'}</h1>
+            <h1>{user?.businessName || user?.fullName || 'Profile'}</h1>
             <p className="profile-email">{user?.email}</p>
           </div>
 
