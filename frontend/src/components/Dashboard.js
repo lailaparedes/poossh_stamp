@@ -299,7 +299,11 @@ function Dashboard() {
         <div className="dashboard-header">
           <div className="header-merchant">
             <div className="merchant-avatar">
-              {user?.merchant?.logo || '🏪'}
+              {user?.merchant?.logo && user.merchant.logo.startsWith('data:image') ? (
+                <img src={user.merchant.logo} alt={user.merchant.name} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+              ) : (
+                user?.merchant?.logo || '🏪'
+              )}
             </div>
             <div className="merchant-info">
               <h2>{user?.merchant?.name}</h2>
@@ -380,8 +384,60 @@ function Dashboard() {
                 </div>
 
                 <div className="form-group">
-                  <label>Logo Emoji</label>
-                  <div className="emoji-picker">
+                  <label>Logo</label>
+                  <small style={{ display: 'block', marginBottom: '0.75rem', color: '#86868b' }}>
+                    Choose an emoji or upload your own logo image
+                  </small>
+                  
+                  {/* Custom Logo Upload */}
+                  <div className="logo-upload-section">
+                    <input
+                      type="file"
+                      id="logo-upload"
+                      accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          // Check file size (max 2MB)
+                          if (file.size > 2 * 1024 * 1024) {
+                            showNotification('error', 'Image must be less than 2MB');
+                            return;
+                          }
+                          
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setEditFormData({ ...editFormData, logo: reader.result });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-upload-logo"
+                      onClick={() => document.getElementById('logo-upload').click()}
+                    >
+                      Upload Custom Logo
+                    </button>
+                    
+                    {/* Logo Preview */}
+                    {editFormData.logo && editFormData.logo.startsWith('data:image') && (
+                      <div className="logo-preview">
+                        <img src={editFormData.logo} alt="Logo preview" />
+                        <button
+                          type="button"
+                          className="btn-remove-logo"
+                          onClick={() => setEditFormData({ ...editFormData, logo: '🏪' })}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Emoji Options */}
+                  <div className="emoji-picker" style={{ marginTop: '1rem' }}>
                     {emojiOptions.map(emoji => (
                       <button
                         key={emoji}

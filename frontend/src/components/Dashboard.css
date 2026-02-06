@@ -312,6 +312,76 @@
   cursor: not-allowed;
 }
 
+/* Logo Upload */
+.logo-upload-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-upload-logo {
+  padding: 0.75rem 1.25rem;
+  border: 2px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: white;
+  color: #1d1d1f;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-upload-logo:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+  color: #667eea;
+}
+
+.logo-preview {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid rgba(0, 0, 0, 0.12);
+  background: white;
+}
+
+.logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.btn-remove-logo {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f56565;
+  color: white;
+  border: 2px solid white;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0;
+}
+
+.btn-remove-logo:hover {
+  background: #c53030;
+  transform: scale(1.1);
+}
+
 /* Stats Grid */
 .stats-grid {
   display: grid;

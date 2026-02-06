@@ -314,7 +314,11 @@ function MyCards() {
               >
                 <div className="card-header">
                   <div className="card-logo">
-                    {merchant.logo && !merchant.logo.includes('http') ? merchant.logo : '🏪'}
+                    {merchant.logo && merchant.logo.startsWith('data:image') ? (
+                      <img src={merchant.logo} alt={merchant.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      merchant.logo || '🏪'
+                    )}
                   </div>
                   <div className="card-info">
                     <h3>{merchant.name}</h3>
