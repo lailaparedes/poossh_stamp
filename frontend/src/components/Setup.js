@@ -50,8 +50,8 @@ function Setup() {
         
         setLoading(false);
         
-        // Navigate to dashboard (no page reload needed)
-        navigate('/dashboard');
+        // Navigate to my cards page to see the created card
+        navigate('/my-cards');
       } else {
         setError(response.data.error || 'Failed to create loyalty program');
         setLoading(false);

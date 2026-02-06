@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
-import Sidebar from './Sidebar';
 import './MyCards.css';
 
 function MyCards() {
@@ -146,22 +145,41 @@ function MyCards() {
 
   if (loading && merchants.length === 0) {
     return (
-      <>
-        <Sidebar />
-        <div className="my-cards-content">
+      <div className="my-cards-container">
+        <nav className="my-cards-nav">
+          <div className="nav-content">
+            <Link to="/" className="nav-logo">
+              <span className="logo-icon">🎴</span>
+              <span className="logo-text">Poossh Stamp</span>
+            </Link>
+          </div>
+        </nav>
+        <div className="my-cards-main">
           <div className="loading-container">
             <div className="loading-spinner"></div>
             <p>Loading your loyalty cards...</p>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
     <div className="my-cards-container">
-      <Sidebar />
-      
+      {/* Navigation */}
+      <nav className="my-cards-nav">
+        <div className="nav-content">
+          <Link to="/" className="nav-logo">
+            <span className="logo-icon">🎴</span>
+            <span className="logo-text">Poossh Stamp</span>
+          </Link>
+          <button className="btn-nav-dashboard" onClick={() => navigate('/dashboard')}>
+            Dashboard
+          </button>
+        </div>
+      </nav>
+
+      {/* Success/Error Notifications */}
       {successMessage && (
         <div className="success-notification">
           <span className="success-icon">✓</span>
@@ -176,25 +194,22 @@ function MyCards() {
         </div>
       )}
 
-      <div className="my-cards-content">
-        <div className="my-cards-header">
-          <div className="my-cards-header-info">
+      {/* Main Content */}
+      <div className="my-cards-main">
+        <div className="my-cards-content">
+          {/* Header */}
+          <div className="my-cards-header">
             <h1>My Loyalty Cards</h1>
             <p>Manage all your loyalty stamp card programs</p>
           </div>
-          <div className="my-cards-header-actions">
-            <button className="btn-dashboard" onClick={() => navigate('/dashboard')}>
-              Dashboard
-            </button>
-          </div>
-        </div>
 
-        <button 
-          className="create-card-button" 
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          {showCreateForm ? '✕ Cancel' : '+ Create New Card'}
-        </button>
+          {/* Create Card Button */}
+          <button 
+            className="btn-create-card" 
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            {showCreateForm ? '✕ Cancel' : '+ Create New Card'}
+          </button>
 
         {showCreateForm && (
           <div className="create-form">
@@ -360,6 +375,7 @@ function MyCards() {
               </div>
             ))
           )}
+        </div>
         </div>
       </div>
     </div>
