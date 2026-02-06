@@ -150,8 +150,9 @@ router.get('/new-cards-daily', authenticateMerchant, async (req, res) => {
     console.log(`[Analytics] New cards data - Merchant: ${merchantId}, Active: ${activeCards?.length || 0}, Deleted: ${deletedCards?.length || 0}, Total: ${allCards.length}`);
 
     // Create all dates in the range (using local timezone)
+    // Set endDate to end of today to include all of today's data
     const endDate = new Date();
-    endDate.setHours(23, 59, 59, 999); // End of today
+    endDate.setHours(23, 59, 59, 999);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     startDate.setHours(0, 0, 0, 0);
     const cardsByDate = {};
@@ -219,8 +220,9 @@ router.get('/stamp-activity', authenticateMerchant, async (req, res) => {
     console.log(`[Analytics] Stamp activity - Merchant: ${merchantId}, Transactions: ${data?.length || 0}, Total stamps: ${totalStamps}`);
 
     // Create all dates in the range (using local timezone)
+    // Set endDate to end of today to include all of today's data
     const endDate = new Date();
-    endDate.setHours(23, 59, 59, 999); // End of today
+    endDate.setHours(23, 59, 59, 999);
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     startDate.setHours(0, 0, 0, 0);
     const stampsByDate = {};
@@ -409,38 +411,6 @@ router.post('/clear-cache', authenticateMerchant, async (req, res) => {
       success: false, 
       error: error.message || 'Failed to clear cache' 
     });
-  }
-});
-
-// Debug endpoint to check date range generation
-router.get('/debug-dates', authenticateMerchant, async (req, res) => {
-  try {
-    const { days = 30 } = req.query;
-    
-    const endDate = new Date();
-    endDate.setHours(23, 59, 59, 999);
-    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    startDate.setHours(0, 0, 0, 0);
-    
-    const dates = [];
-    const currentDate = new Date(startDate);
-    while (currentDate <= endDate) {
-      dates.push(toLocalDateString(currentDate.toISOString()));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    res.json({
-      success: true,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      totalDays: dates.length,
-      firstThree: dates.slice(0, 3),
-      lastThree: dates.slice(-3),
-      includesFeb5: dates.includes('2026-02-05'),
-      allDates: dates
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
   }
 });
 

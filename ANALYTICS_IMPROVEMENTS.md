@@ -26,6 +26,7 @@ Implemented **Path A** - Quick improvements to make charts more accurate and fas
 - Converts UTC timestamps to local dates (YYYY-MM-DD)
 - Ensures dates are grouped correctly regardless of timezone
 - Fixes issue where Feb 3 data might appear on Feb 4 or vice versa
+- **Fixed**: `endDate` now set to end of day (23:59:59) instead of midnight to include ALL of today's data
 
 ### 3. **Include Deleted Cards** 📊
 - **New Cards Chart** now includes deleted cards for historical accuracy
