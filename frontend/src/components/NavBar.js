@@ -14,7 +14,6 @@ function NavBar() {
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '' },
     { path: '/my-cards', label: 'My Cards', icon: '' },
     { path: '/customers', label: 'Customers', icon: '' },
     { path: '/profile', label: 'Profile', icon: '' }
@@ -24,7 +23,7 @@ function NavBar() {
     <nav className="navbar">
       <div className="navbar-container">
         {/* Logo */}
-        <Link to="/dashboard" className="navbar-logo">
+        <Link to="/my-cards" className="navbar-logo">
           <span className="logo-icon">✦</span>
           <span className="logo-text">Poossh Stamp</span>
         </Link>

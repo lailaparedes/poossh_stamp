@@ -25,7 +25,7 @@ function Login() {
     
     if (result.success) {
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate('/my-cards');
       }, 100);
     } else {
       setError(result.error);
