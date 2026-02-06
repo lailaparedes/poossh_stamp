@@ -111,7 +111,7 @@ function Pricing() {
             <p>Set your own rewards and stamp requirements. Full control over your program.</p>
           </div>
 
-          <div className="benefit-card benefit-card-highlighted">
+          <div className="benefit-card">
             <div className="benefit-icon">
               <div className="icon-box">3</div>
             </div>
