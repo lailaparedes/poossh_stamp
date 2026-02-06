@@ -188,6 +188,15 @@
   font-family: inherit;
 }
 
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%231D1D1F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
 .form-group input::placeholder {
   color: #86868b;
 }
@@ -204,16 +213,17 @@
   display: flex;
   gap: 0.625rem;
   flex-wrap: wrap;
+  margin-bottom: 0.5rem;
 }
 
 .stamp-btn {
   flex: 1;
   min-width: 75px;
-  padding: 0.75rem 0.5rem;
+  padding: 0.875rem 0.75rem;
   background: #f5f5f7;
   border: 2px solid transparent;
   border-radius: 12px;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   color: #1d1d1f;
   cursor: pointer;
@@ -230,6 +240,12 @@
   background: #1d1d1f;
   color: white;
   border-color: #1d1d1f;
+}
+
+.form-group small {
+  font-size: 0.8125rem;
+  color: #86868b;
+  display: block;
 }
 
 /* Color Picker */

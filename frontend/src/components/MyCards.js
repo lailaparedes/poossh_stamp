@@ -242,14 +242,19 @@ function MyCards() {
 
             <div className="form-group">
               <label>Stamps Required *</label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={formData.stampsRequired}
-                onChange={(e) => setFormData({ ...formData, stampsRequired: parseInt(e.target.value) })}
-                required
-              />
+              <div className="stamps-options">
+                {[5, 8, 10, 12, 15].map(num => (
+                  <button
+                    key={num}
+                    type="button"
+                    className={`stamp-btn ${formData.stampsRequired === num ? 'active' : ''}`}
+                    onClick={() => setFormData({ ...formData, stampsRequired: num })}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <small>Most businesses choose 10 stamps</small>
             </div>
 
             <div className="form-group">
