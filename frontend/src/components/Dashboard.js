@@ -180,29 +180,49 @@ function Dashboard() {
   const handleEditCard = async (e) => {
     e.preventDefault();
     
+    console.log('=== EDIT CARD DEBUG ===');
+    console.log('User:', user);
+    console.log('Merchant ID:', user?.merchant?.id);
+    console.log('Form Data:', editFormData);
+    
     if (!user?.merchant?.id) {
+      console.error('No merchant ID found');
       showNotification('error', 'No active card to edit');
       return;
     }
 
     try {
       setLoading(true);
-      await axios.put(`/api/merchants/${user.merchant.id}`, editFormData);
+      const url = `/api/merchants/${user.merchant.id}`;
+      console.log('PUT Request URL:', url);
+      console.log('Request Data:', editFormData);
+      
+      const response = await axios.put(url, editFormData);
+      console.log('Update Response:', response.data);
       
       // Refresh user data to get updated merchant info
-      const response = await axios.get('/api/auth/verify');
-      if (response.data.data?.token) {
-        await updateToken(response.data.data.token);
+      console.log('Fetching updated user data...');
+      const verifyResponse = await axios.get('/api/auth/verify');
+      console.log('Verify Response:', verifyResponse.data);
+      
+      if (verifyResponse.data.data?.token) {
+        await updateToken(verifyResponse.data.data.token);
       }
       
       // Refresh dashboard data
+      console.log('Refreshing dashboard data...');
       await fetchAllData(true);
       
       setShowEditForm(false);
       showNotification('success', 'Card updated successfully!', 3000);
     } catch (err) {
-      console.error('Error updating card:', err);
-      showNotification('error', err.response?.data?.error || 'Failed to update card');
+      console.error('=== ERROR UPDATING CARD ===');
+      console.error('Error object:', err);
+      console.error('Error response:', err.response);
+      console.error('Error message:', err.message);
+      console.error('Response data:', err.response?.data);
+      console.error('Response status:', err.response?.status);
+      showNotification('error', err.response?.data?.error || err.message || 'Failed to update card');
     } finally {
       setLoading(false);
     }

@@ -650,4 +650,113 @@ router.delete('/:merchantId', authenticateMerchant, async (req, res) => {
   }
 });
 
+// Update merchant card
+router.put('/:merchantId', authenticateMerchant, async (req, res) => {
+  try {
+    const { merchantId } = req.params;
+    const { businessName, stampsRequired, logo, color } = req.body;
+    const userId = req.merchant.userId;
+
+    console.log('📝 Updating merchant:', merchantId, 'User:', userId);
+    console.log('Request body:', { businessName, stampsRequired, logo, color });
+
+    // Validate required fields
+    if (!businessName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Business name is required'
+      });
+    }
+
+    if (stampsRequired && (stampsRequired < 5 || stampsRequired > 20)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Stamps required must be between 5 and 20'
+      });
+    }
+
+    // Verify merchant exists and belongs to user
+    const { data: existingMerchant, error: checkError } = await supabase
+      .from('merchants')
+      .select('*')
+      .eq('id', merchantId)
+      .eq('is_active', true)
+      .single();
+
+    if (checkError) {
+      console.error('Check merchant error:', checkError);
+      return res.status(404).json({
+        success: false,
+        error: 'Merchant not found'
+      });
+    }
+
+    if (!existingMerchant) {
+      return res.status(404).json({
+        success: false,
+        error: 'Merchant not found'
+      });
+    }
+
+    console.log('Existing merchant:', existingMerchant);
+    console.log('Created by:', existingMerchant.created_by, 'User ID:', userId);
+
+    if (existingMerchant.created_by !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Not authorized to update this merchant'
+      });
+    }
+
+    // Prepare update data
+    const updateData = {
+      business_name: businessName,
+      updated_at: new Date().toISOString()
+    };
+
+    if (stampsRequired) {
+      updateData.stamps_required = stampsRequired;
+    }
+
+    if (logo) {
+      updateData.logo = logo;
+    }
+
+    if (color) {
+      updateData.color = color;
+    }
+
+    console.log('Update data:', updateData);
+
+    // Update merchant
+    const { data: updatedMerchant, error: updateError } = await supabase
+      .from('merchants')
+      .update(updateData)
+      .eq('id', merchantId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Update error:', updateError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to update merchant'
+      });
+    }
+
+    console.log('✅ Merchant updated successfully:', updatedMerchant);
+    res.json({
+      success: true,
+      message: 'Card updated successfully',
+      data: updatedMerchant
+    });
+  } catch (error) {
+    console.error('Update merchant error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to update merchant'
+    });
+  }
+});
+
 module.exports = router;
