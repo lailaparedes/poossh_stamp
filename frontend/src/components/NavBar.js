@@ -14,7 +14,7 @@ function NavBar() {
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/dashboard', label: 'Dashboard', icon: '' },
     { path: '/my-cards', label: 'My Cards', icon: '🎴' },
     { path: '/customers', label: 'Customers', icon: '👥' },
     { path: '/profile', label: 'Profile', icon: '👤' }
