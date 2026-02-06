@@ -142,11 +142,7 @@ function Customers() {
   const getProgressPercentage = (current, required) => {
     return Math.min((current / required) * 100, 100);
   };
-  
-  const isCardReadyToRedeem = (current, required) => {
-    return current >= required;
-  };
-  
+
   const handleExport = () => {
     // TODO: Implement export to CSV
     console.log('Export customers');
@@ -263,31 +259,8 @@ function Customers() {
                   <p className="customer-email-mini">{customer.email}</p>
                   <p className="customer-joined">Joined {formatDate(customer.joinedDate)}</p>
                   
-                  {/* Cards with progress bars */}
-                  <div className="customer-cards-list">
-                    {customer.cards.map((card) => (
-                      <div key={card.cardId} className="card-item">
-                        <div className="card-item-header" style={{ backgroundColor: card.color }}>
-                          <span className="card-name">{card.merchantName}</span>
-                          {isCardReadyToRedeem(card.currentStamps, card.stampsRequired) && (
-                            <span className="ready-badge">READY TO REDEEM</span>
-                          )}
-                        </div>
-                        <div className="card-progress-info">
-                          <span>{card.currentStamps} / {card.stampsRequired} stamps</span>
-                          <span className="last-visit">Last: {formatDate(card.lastActivity)}</span>
-                        </div>
-                        <div className="card-progress-bar">
-                          <div 
-                            className="card-progress-fill"
-                            style={{ 
-                              width: `${getProgressPercentage(card.currentStamps, card.stampsRequired)}%`,
-                              backgroundColor: card.color
-                            }}
-                          ></div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="customer-cards-count">
+                    <span>{customer.cards.length} active {customer.cards.length === 1 ? 'card' : 'cards'}</span>
                   </div>
                 </div>
               ))}
