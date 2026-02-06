@@ -142,11 +142,6 @@ function Customers() {
   const getProgressPercentage = (current, required) => {
     return Math.min((current / required) * 100, 100);
   };
-
-  const handleExport = () => {
-    // TODO: Implement export to CSV
-    console.log('Export customers');
-  };
   
   const getTotalVisits = (customer) => {
     // Calculate based on stamps given (estimate)
@@ -193,9 +188,6 @@ function Customers() {
               <p className="customer-count-text">{filteredCustomers.length} customers found</p>
             </div>
           </div>
-          <button className="btn-export" onClick={handleExport}>
-            Export
-          </button>
         </div>
 
         {/* Search and Filter Bar */}
