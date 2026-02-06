@@ -92,23 +92,13 @@
 }
 
 .search-input-wrapper {
-  position: relative;
   flex: 1;
   max-width: 400px;
 }
 
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  pointer-events: none;
-}
-
 .search-input {
   width: 100%;
-  padding: 0.875rem 1rem 0.875rem 3rem;
+  padding: 0.875rem 1rem;
   font-size: 0.9375rem;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 12px;
@@ -295,17 +285,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #1d1d1f;
   color: white;
 }
 
 .card-name {
   font-weight: 600;
   font-size: 0.9375rem;
+  color: white;
 }
 
 .ready-badge {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
+  background: #34c759;
   color: white;
   padding: 0.25rem 0.625rem;
   border-radius: 6px;
@@ -341,6 +332,7 @@
 
 .card-progress-fill {
   height: 100%;
+  background: #1d1d1f;
   transition: width 0.3s ease;
 }
 
@@ -392,21 +384,15 @@
 
 .detail-item {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.detail-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
+  flex-direction: column;
 }
 
 .detail-item label {
   display: block;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: #86868b;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.5rem 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -489,6 +475,7 @@
 
 .card-detail-header {
   padding: 1rem 1.25rem;
+  background: #1d1d1f;
   color: white;
   font-weight: 600;
   font-size: 1rem;
@@ -509,6 +496,7 @@
 
 .progress-bar-detail {
   height: 100%;
+  background: #1d1d1f;
   transition: width 0.3s ease;
 }
 
@@ -517,11 +505,6 @@
   text-align: center;
   padding: 4rem 2rem;
   color: #86868b;
-}
-
-.empty-state-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
 }
 
 .empty-state h2 {

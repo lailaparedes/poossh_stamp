@@ -198,14 +198,13 @@ function Customers() {
             </div>
           </div>
           <button className="btn-export" onClick={handleExport}>
-            📤 Export
+            Export
           </button>
         </div>
 
         {/* Search and Filter Bar */}
         <div className="search-filter-bar">
           <div className="search-input-wrapper">
-            <span className="search-icon">🔍</span>
             <input
               type="text"
               placeholder="Search customers..."
@@ -216,7 +215,7 @@ function Customers() {
           </div>
           
           <div className="filter-wrapper">
-            <label htmlFor="card-filter">🎴 Filter by Card</label>
+            <label htmlFor="card-filter">Filter by Card</label>
             <select 
               id="card-filter"
               value={filterCard} 
@@ -235,13 +234,11 @@ function Customers() {
         {/* Main Content: List + Details Panel */}
         {allCustomers.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">👥</div>
             <h2>No Customers Yet</h2>
             <p>Customers will appear here once they create loyalty cards</p>
           </div>
         ) : filteredCustomers.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">🔍</div>
             <h2>No Results Found</h2>
             <p>No customers match your search criteria</p>
           </div>
@@ -303,7 +300,6 @@ function Customers() {
                 
                 <div className="details-section">
                   <div className="detail-item">
-                    <span className="detail-icon">👤</span>
                     <div>
                       <label>Name</label>
                       <p>{selectedCustomer.name}</p>
@@ -311,7 +307,6 @@ function Customers() {
                   </div>
                   
                   <div className="detail-item">
-                    <span className="detail-icon">📧</span>
                     <div>
                       <label>Email</label>
                       <p>{selectedCustomer.email}</p>
@@ -320,7 +315,6 @@ function Customers() {
                   
                   {selectedCustomer.phone && (
                     <div className="detail-item">
-                      <span className="detail-icon">📱</span>
                       <div>
                         <label>Phone</label>
                         <p>{selectedCustomer.phone}</p>
@@ -329,7 +323,6 @@ function Customers() {
                   )}
                   
                   <div className="detail-item">
-                    <span className="detail-icon">📅</span>
                     <div>
                       <label>Member Since</label>
                       <p>{formatDate(selectedCustomer.joinedDate)}</p>
@@ -349,7 +342,7 @@ function Customers() {
                 </div>
                 
                 <div className="active-cards-section">
-                  <h3>🎴 Active Cards ({selectedCustomer.cards.length})</h3>
+                  <h3>Active Cards ({selectedCustomer.cards.length})</h3>
                   
                   {selectedCustomer.cards.map((card) => (
                     <div key={card.cardId} className="active-card-detail">
