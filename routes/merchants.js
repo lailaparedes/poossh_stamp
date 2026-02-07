@@ -75,29 +75,32 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     console.log('User ID:', userId);
     console.log('Request body:', { stampsRequired, rewardDescription, color, logo });
 
-    // Get onboarding data
-    console.log('Fetching onboarding data...');
-    const { data: onboardingData, error: onboardingError } = await supabase
-      .from('merchant_onboarding_data')
+    // Get user data (including business_name)
+    console.log('Fetching user data...');
+    const { data: userData, error: userError } = await supabase
+      .from('merchant_portal_users')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single();
 
-    console.log('Onboarding query result:', { data: onboardingData, error: onboardingError });
+    console.log('User query result:', { data: userData ? 'found' : 'not found', error: userError });
 
-    if (onboardingError || !onboardingData) {
-      console.error('Onboarding data not found:', onboardingError);
+    if (userError || !userData) {
+      console.error('User data not found:', userError);
       return res.status(400).json({
         success: false,
-        error: 'Onboarding data not found. Please try signing up again.'
+        error: 'User data not found. Please try logging in again.'
       });
     }
 
     // Create merchant in merchants table
+    const businessName = userData.business_name || userData.full_name || 'My Business';
+    const category = 'Other'; // Default category
+    
     console.log('Creating merchant with data:', {
-      name: onboardingData.business_name,
+      name: businessName,
       logo: logo || '🏪',
-      category: onboardingData.category,
+      category: category,
       stamps_required: stampsRequired,
       reward_description: rewardDescription,
       color: color
@@ -106,9 +109,9 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     const { data: newMerchant, error: merchantError } = await supabase
       .from('merchants')
       .insert([{
-        name: onboardingData.business_name,
+        name: businessName,
         logo: logo || '🏪',
-        category: onboardingData.category,
+        category: category,
         stamps_required: stampsRequired,
         reward_description: rewardDescription,
         color: color,
@@ -168,14 +171,6 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     }
 
     console.log('✅ User updated with merchant_id');
-
-    // Delete onboarding data
-    console.log('Cleaning up onboarding data...');
-    await supabase
-      .from('merchant_onboarding_data')
-      .delete()
-      .eq('user_id', userId);
-
     console.log('=== CREATE LOYALTY PROGRAM SUCCESS ===');
     
     // Generate new JWT token with updated merchantId
