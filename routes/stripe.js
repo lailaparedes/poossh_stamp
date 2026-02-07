@@ -131,6 +131,44 @@ router.get('/verify-session', authenticateMerchant, async (req, res) => {
   }
 });
 
+// Create Stripe Customer Portal Session (for managing billing)
+router.post('/create-portal-session', authenticateMerchant, async (req, res) => {
+  try {
+    const userId = req.merchant.userId;
+
+    console.log('Creating customer portal session for user:', userId);
+
+    // Get user data
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('User fetch error:', userError);
+      return res.json({ success: false, error: 'User not found' });
+    }
+
+    if (!user.stripe_customer_id) {
+      return res.json({ success: false, error: 'No billing account found. Please subscribe to a plan first.' });
+    }
+
+    // Create a portal session
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.stripe_customer_id,
+      return_url: `${process.env.APP_URL || 'http://localhost:3000'}/profile`,
+    });
+
+    console.log('Portal session created:', session.id);
+
+    res.json({ success: true, url: session.url });
+  } catch (error) {
+    console.error('Portal session error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Stripe Webhook Handler
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];

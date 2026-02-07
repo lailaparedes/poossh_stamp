@@ -11,6 +11,7 @@ function Profile() {
   const [errorMessage, setErrorMessage] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [merchantCount, setMerchantCount] = useState(0);
+  const [billingLoading, setBillingLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     businessName: '',
@@ -103,6 +104,42 @@ function Profile() {
       confirmPassword: ''
     }));
     setErrorMessage(null);
+  };
+
+  const handleManageBilling = async () => {
+    setBillingLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await axios.post('/api/stripe/create-portal-session');
+      
+      if (response.data.success) {
+        // Redirect to Stripe Customer Portal
+        window.location.href = response.data.url;
+      } else {
+        setErrorMessage(response.data.error || 'Failed to open billing portal');
+        setTimeout(() => setErrorMessage(null), 5000);
+      }
+    } catch (err) {
+      console.error('Billing portal error:', err);
+      setErrorMessage('Failed to open billing portal. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setBillingLoading(false);
+    }
+  };
+
+  const getSubscriptionBadge = (status) => {
+    if (status === 'active') return { text: 'Active', className: 'badge-active' };
+    if (status === 'past_due') return { text: 'Past Due', className: 'badge-warning' };
+    if (status === 'canceled') return { text: 'Canceled', className: 'badge-canceled' };
+    return { text: 'Inactive', className: 'badge-inactive' };
+  };
+
+  const getPlanName = (plan) => {
+    if (plan === 'starter') return 'Starter';
+    if (plan === 'pro') return 'Pro';
+    return 'No Plan';
   };
 
   return (
@@ -230,6 +267,70 @@ function Profile() {
                 </div>
               )}
             </form>
+          </div>
+
+          {/* Subscription Section */}
+          <div className="profile-card subscription-card">
+            <div className="card-header">
+              <h2>Subscription & Billing</h2>
+            </div>
+
+            <div className="subscription-details">
+              <div className="subscription-info">
+                <div className="subscription-plan">
+                  <span className="plan-label">Current Plan</span>
+                  <div className="plan-name-container">
+                    <span className="plan-name">{getPlanName(user?.subscriptionPlan)}</span>
+                    <span className={`subscription-badge ${getSubscriptionBadge(user?.subscriptionStatus).className}`}>
+                      {getSubscriptionBadge(user?.subscriptionStatus).text}
+                    </span>
+                  </div>
+                </div>
+
+                {user?.subscriptionPlan && (
+                  <div className="plan-features">
+                    {user.subscriptionPlan === 'starter' && (
+                      <>
+                        <div className="feature-item">✓ Unlimited stamps</div>
+                        <div className="feature-item">✓ Single stamp card</div>
+                        <div className="feature-item">✓ Basic analytics</div>
+                      </>
+                    )}
+                    {user.subscriptionPlan === 'pro' && (
+                      <>
+                        <div className="feature-item">✓ Everything in Starter</div>
+                        <div className="feature-item">✓ Multiple stamp cards</div>
+                        <div className="feature-item">✓ Advanced analytics</div>
+                        <div className="feature-item">✓ Priority support</div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="billing-actions">
+                <button
+                  className="btn-manage-billing"
+                  onClick={handleManageBilling}
+                  disabled={billingLoading || !user?.stripeCustomerId}
+                >
+                  {billingLoading ? (
+                    <>
+                      <span className="spinner-small"></span>
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      Manage Billing
+                      <span className="arrow">→</span>
+                    </>
+                  )}
+                </button>
+                <p className="billing-note">
+                  Update payment method, view invoices, or manage your subscription
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Account Stats */}

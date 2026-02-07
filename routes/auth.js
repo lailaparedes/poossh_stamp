@@ -183,7 +183,10 @@ router.post('/login', async (req, res) => {
           businessName: user.business_name || user.full_name,
           role: user.role,
           createdAt: user.created_at,
-          merchant: user.merchant
+          merchant: user.merchant,
+          subscriptionStatus: user.subscription_status,
+          subscriptionPlan: user.subscription_plan,
+          stripeCustomerId: user.stripe_customer_id
         }
       }
     });
@@ -265,7 +268,10 @@ router.get('/verify', async (req, res) => {
           businessName: user.business_name || user.full_name,
           role: user.role,
           createdAt: user.created_at,
-          merchant: user.merchant
+          merchant: user.merchant,
+          subscriptionStatus: user.subscription_status,
+          subscriptionPlan: user.subscription_plan,
+          stripeCustomerId: user.stripe_customer_id
         }
       }
     });
