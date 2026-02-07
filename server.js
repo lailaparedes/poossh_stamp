@@ -7,6 +7,7 @@ const merchantsRoutes = require('./routes/merchants');
 const analyticsRoutes = require('./routes/analytics');
 const authRoutes = require('./routes/auth');
 const stripeRoutes = require('./routes/stripe');
+const subscriptionRoutes = require('./routes/subscription');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/merchants', merchantsRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

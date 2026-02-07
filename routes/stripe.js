@@ -303,14 +303,21 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       const canceledSubscription = event.data.object;
       console.log('Subscription canceled:', canceledSubscription.id);
       
-      // Mark subscription as canceled
+      // Set 30-day grace period
+      const gracePeriodEnd = new Date();
+      gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 30);
+      
+      // Mark subscription as canceled with grace period
       await supabase
         .from('merchant_portal_users')
         .update({
           subscription_status: 'canceled',
+          subscription_end_date: gracePeriodEnd.toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('stripe_subscription_id', canceledSubscription.id);
+      
+      console.log('Grace period set until:', gracePeriodEnd.toISOString());
       break;
 
     case 'invoice.payment_failed':

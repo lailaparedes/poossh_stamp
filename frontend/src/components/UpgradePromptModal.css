@@ -1,0 +1,249 @@
+.upgrade-modal-content {
+  background: white;
+  border-radius: 24px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.upgrade-modal-header {
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #f5f5f7;
+}
+
+.upgrade-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+}
+
+.upgrade-modal-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 0.5rem;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.upgrade-subtitle {
+  font-size: 1rem;
+  color: #86868b;
+  margin: 0;
+}
+
+.upgrade-modal-body {
+  padding: 2rem;
+}
+
+.limit-info {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f5f5f7;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.limit-badge {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.limit-current {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #667eea;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.limit-divider {
+  font-size: 2rem;
+  color: #86868b;
+}
+
+.limit-max {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #86868b;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.limit-text {
+  font-size: 0.875rem;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.upgrade-benefits {
+  margin-bottom: 2rem;
+}
+
+.upgrade-benefits h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0 0 1rem;
+}
+
+.benefit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9375rem;
+  color: #1d1d1f;
+}
+
+.benefit-icon {
+  width: 32px;
+  height: 32px;
+  background: #f5f5f7;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+}
+
+.pricing-display {
+  text-align: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 16px;
+  border: 2px solid #667eea;
+}
+
+.price-tag {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.price-amount {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #667eea;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.price-period {
+  font-size: 1.125rem;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.price-note {
+  font-size: 0.875rem;
+  color: #86868b;
+  margin: 0;
+}
+
+.upgrade-modal-footer {
+  padding: 1.5rem 2rem 2rem;
+  display: flex;
+  gap: 1rem;
+  border-top: 1px solid #f5f5f7;
+}
+
+.btn-upgrade-later {
+  flex: 1;
+  padding: 1rem;
+  background: white;
+  color: #1d1d1f;
+  border: 2px solid #e5e5e7;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.btn-upgrade-later:hover {
+  background: #f5f5f7;
+  border-color: #1d1d1f;
+}
+
+.btn-upgrade-now {
+  flex: 1.5;
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.btn-upgrade-now:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .upgrade-modal-content {
+    border-radius: 20px;
+  }
+
+  .upgrade-modal-header {
+    padding: 1.5rem 1.5rem 1rem;
+  }
+
+  .upgrade-modal-header h2 {
+    font-size: 1.75rem;
+  }
+
+  .upgrade-modal-body {
+    padding: 1.5rem;
+  }
+
+  .upgrade-modal-footer {
+    padding: 1rem 1.5rem 1.5rem;
+    flex-direction: column;
+  }
+
+  .btn-upgrade-later,
+  .btn-upgrade-now {
+    width: 100%;
+  }
+
+  .upgrade-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 40px;
+  }
+
+  .limit-current,
+  .limit-max {
+    font-size: 2.5rem;
+  }
+
+  .price-amount {
+    font-size: 2.5rem;
+  }
+}

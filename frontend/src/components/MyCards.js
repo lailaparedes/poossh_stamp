@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import NavBar from './NavBar';
+import UpgradePromptModal from './UpgradePromptModal';
+import GracePeriodBanner from './GracePeriodBanner';
 import './MyCards.css';
 
 function MyCards() {
@@ -12,6 +14,10 @@ function MyCards() {
   const [merchants, setMerchants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [cardLimitInfo, setCardLimitInfo] = useState(null);
+  const [gracePeriodInfo, setGracePeriodInfo] = useState(null);
+  const [showGraceBanner, setShowGraceBanner] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -48,7 +54,31 @@ function MyCards() {
 
   useEffect(() => {
     fetchMerchants();
+    checkCardLimits();
+    checkGracePeriod();
   }, []);
+
+  const checkCardLimits = async () => {
+    try {
+      const response = await axios.get('/api/subscription/card-count');
+      if (response.data.success) {
+        setCardLimitInfo(response.data);
+      }
+    } catch (err) {
+      console.error('Error checking card limits:', err);
+    }
+  };
+
+  const checkGracePeriod = async () => {
+    try {
+      const response = await axios.post('/api/subscription/check-grace-period');
+      if (response.data.success && response.data.status === 'grace_period') {
+        setGracePeriodInfo(response.data);
+      }
+    } catch (err) {
+      console.error('Error checking grace period:', err);
+    }
+  };
 
   const fetchMerchants = async () => {
     try {
@@ -163,6 +193,17 @@ function MyCards() {
   return (
     <>
       <NavBar />
+      {gracePeriodInfo && showGraceBanner && (
+        <GracePeriodBanner 
+          daysRemaining={gracePeriodInfo.daysRemaining}
+          onDismiss={() => setShowGraceBanner(false)}
+        />
+      )}
+      <UpgradePromptModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        currentCardCount={cardLimitInfo?.cardCount || 0}
+      />
       <div className="page-with-navbar my-cards-container">
 
       {/* Success/Error Notifications */}
