@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import NavBar from './NavBar';
+import PlanChangeModal from './PlanChangeModal';
 import './Profile.css';
 
 function Profile() {
@@ -13,6 +14,8 @@ function Profile() {
   const [merchantCount, setMerchantCount] = useState(0);
   const [billingLoading, setBillingLoading] = useState(false);
   const [planChangeLoading, setPlanChangeLoading] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   
   const [formData, setFormData] = useState({
     businessName: '',
@@ -143,17 +146,25 @@ function Profile() {
     return 'No Plan';
   };
 
-  const handleChangePlan = async (newPlan) => {
-    if (!window.confirm(`Are you sure you want to ${newPlan === 'pro' ? 'upgrade to Pro' : 'downgrade to Starter'}? Your billing will be prorated automatically.`)) {
-      return;
-    }
+  const handleOpenPlanModal = (newPlan) => {
+    setSelectedPlan(newPlan);
+    setShowPlanModal(true);
+  };
 
+  const handleClosePlanModal = () => {
+    if (!planChangeLoading) {
+      setShowPlanModal(false);
+      setSelectedPlan(null);
+    }
+  };
+
+  const handleConfirmPlanChange = async () => {
     setPlanChangeLoading(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
     try {
-      const response = await axios.post('/api/stripe/change-plan', { newPlan });
+      const response = await axios.post('/api/stripe/change-plan', { newPlan: selectedPlan });
       
       if (response.data.success) {
         setSuccessMessage(response.data.message);
@@ -163,6 +174,10 @@ function Profile() {
         if (token && updateToken) {
           await updateToken(token);
         }
+        
+        // Close modal and reset
+        setShowPlanModal(false);
+        setSelectedPlan(null);
         
         setTimeout(() => setSuccessMessage(null), 5000);
       } else {
@@ -181,6 +196,14 @@ function Profile() {
   return (
     <>
       <NavBar />
+      <PlanChangeModal
+        isOpen={showPlanModal}
+        onClose={handleClosePlanModal}
+        onConfirm={handleConfirmPlanChange}
+        currentPlan={user?.subscriptionPlan}
+        newPlan={selectedPlan}
+        loading={planChangeLoading}
+      />
       <div className="page-with-navbar profile-page">
         <div className="profile-container">
           {/* Header */}
@@ -351,35 +374,19 @@ function Profile() {
                     {user.subscriptionPlan === 'starter' && (
                       <button
                         className="btn-upgrade"
-                        onClick={() => handleChangePlan('pro')}
+                        onClick={() => handleOpenPlanModal('pro')}
                         disabled={planChangeLoading}
                       >
-                        {planChangeLoading ? (
-                          <>
-                            <span className="spinner-small"></span>
-                            Processing...
-                          </>
-                        ) : (
-                          <>
-                            ✦ Upgrade to Pro
-                          </>
-                        )}
+                        ✦ Upgrade to Pro
                       </button>
                     )}
                     {user.subscriptionPlan === 'pro' && (
                       <button
                         className="btn-downgrade"
-                        onClick={() => handleChangePlan('starter')}
+                        onClick={() => handleOpenPlanModal('starter')}
                         disabled={planChangeLoading}
                       >
-                        {planChangeLoading ? (
-                          <>
-                            <span className="spinner-small"></span>
-                            Processing...
-                          </>
-                        ) : (
-                          'Downgrade to Starter'
-                        )}
+                        Downgrade to Starter
                       </button>
                     )}
                     <p className="plan-change-note">
