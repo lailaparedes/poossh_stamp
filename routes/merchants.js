@@ -271,13 +271,13 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     console.log('Creating merchant:', { businessName, category, stampsRequired, rewardDescription, color, logo });
 
     // Get user data to check subscription plan
-    const { data: userData, error: userError } = await supabase
+    const { data: userPlanData, error: planError } = await supabase
       .from('merchant_portal_users')
       .select('subscription_plan')
       .eq('id', userId)
       .single();
 
-    if (userError || !userData) {
+    if (planError || !userPlanData) {
       return res.status(400).json({
         success: false,
         error: 'User data not found.'
@@ -285,7 +285,7 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     }
 
     // Check subscription plan and card limits
-    const userPlan = userData.subscription_plan;
+    const userPlan = userPlanData.subscription_plan;
     console.log('User plan:', userPlan);
 
     if (userPlan === 'starter') {
