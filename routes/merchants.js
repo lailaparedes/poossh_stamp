@@ -93,6 +93,35 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
       });
     }
 
+    // Check subscription plan and card limits
+    const userPlan = userData.subscription_plan;
+    console.log('User plan:', userPlan);
+
+    if (userPlan === 'starter') {
+      // Check existing card count for Starter plan
+      const { data: existingCards, error: countError } = await supabase
+        .from('merchants')
+        .select('id')
+        .eq('created_by', userId)
+        .eq('is_active', true);
+
+      if (countError) {
+        console.error('Error checking card count:', countError);
+      }
+
+      const cardCount = existingCards?.length || 0;
+      console.log('Current active card count:', cardCount);
+
+      if (cardCount >= 2) {
+        console.log('❌ Starter plan limit reached (2 cards)');
+        return res.status(403).json({
+          success: false,
+          error: 'You have reached the maximum number of cards for Starter plan (2 cards). Upgrade to Pro for unlimited cards.',
+          needsUpgrade: true
+        });
+      }
+    }
+
     // Create merchant in merchants table
     const businessName = userData.business_name || userData.full_name || 'My Business';
     const category = 'Other'; // Default category
@@ -240,6 +269,49 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     const { businessName, category, stampsRequired, rewardDescription, color, logo } = req.body;
     
     console.log('Creating merchant:', { businessName, category, stampsRequired, rewardDescription, color, logo });
+
+    // Get user data to check subscription plan
+    const { data: userData, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select('subscription_plan')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !userData) {
+      return res.status(400).json({
+        success: false,
+        error: 'User data not found.'
+      });
+    }
+
+    // Check subscription plan and card limits
+    const userPlan = userData.subscription_plan;
+    console.log('User plan:', userPlan);
+
+    if (userPlan === 'starter') {
+      // Check existing card count for Starter plan
+      const { data: existingCards, error: countError } = await supabase
+        .from('merchants')
+        .select('id')
+        .eq('created_by', userId)
+        .eq('is_active', true);
+
+      if (countError) {
+        console.error('Error checking card count:', countError);
+      }
+
+      const cardCount = existingCards?.length || 0;
+      console.log('Current active card count:', cardCount);
+
+      if (cardCount >= 2) {
+        console.log('❌ Starter plan limit reached (2 cards)');
+        return res.status(403).json({
+          success: false,
+          error: 'You have reached the maximum number of cards for Starter plan (2 cards). Upgrade to Pro for unlimited cards.',
+          needsUpgrade: true
+        });
+      }
+    }
 
     // Get user's existing merchants to check for common_merchant_id
     const { data: existingMerchants } = await supabase

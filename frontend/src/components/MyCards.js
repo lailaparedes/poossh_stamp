@@ -119,8 +119,15 @@ function MyCards() {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Error creating card:', err);
-      setError(err.response?.data?.error || 'Failed to create loyalty card');
-      setTimeout(() => setError(null), 5000);
+      
+      // Check if it's a plan limit error
+      if (err.response?.data?.needsUpgrade) {
+        setShowUpgradeModal(true);
+        setShowCreateForm(false);
+      } else {
+        setError(err.response?.data?.error || 'Failed to create loyalty card');
+        setTimeout(() => setError(null), 5000);
+      }
     } finally {
       setLoading(false);
     }

@@ -53,11 +53,26 @@ function Setup() {
         // Navigate to my cards page to see the created card
         navigate('/my-cards');
       } else {
+        // Check if it's a plan limit error
+        if (response.data.needsUpgrade) {
+          alert('You have reached the Starter plan limit (2 cards). Please upgrade to Pro to create unlimited cards.');
+          navigate('/profile');
+          return;
+        }
+        
         setError(response.data.error || 'Failed to create loyalty program');
         setLoading(false);
       }
     } catch (err) {
       console.error('Setup error:', err);
+      
+      // Check if it's a plan limit error
+      if (err.response?.data?.needsUpgrade) {
+        alert('You have reached the Starter plan limit (2 cards). Please upgrade to Pro to create unlimited cards.');
+        navigate('/profile');
+        return;
+      }
+      
       setError('Failed to create loyalty program. Please try again.');
       setLoading(false);
     }
