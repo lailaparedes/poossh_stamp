@@ -266,22 +266,6 @@ function Customers() {
                   
                   <div className="detail-item">
                     <div>
-                      <label>Email</label>
-                      <p>{selectedCustomer.email}</p>
-                    </div>
-                  </div>
-                  
-                  {selectedCustomer.phone && (
-                    <div className="detail-item">
-                      <div>
-                        <label>Phone</label>
-                        <p>{selectedCustomer.phone}</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="detail-item">
-                    <div>
                       <label>Member Since</label>
                       <p>{formatDate(selectedCustomer.joinedDate)}</p>
                     </div>

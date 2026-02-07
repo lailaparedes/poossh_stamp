@@ -28,6 +28,24 @@ function LandingPage() {
 
       {/* Hero Section */}
       <section className="hero-section" id="home">
+        <div className="hero-stars">
+          <span className="star star-large" style={{top: '5%', left: '8%'}}>✦</span>
+          <span className="star star-small" style={{top: '15%', left: '15%'}}>✦</span>
+          <span className="star star-large" style={{top: '35%', left: '5%'}}>✦</span>
+          <span className="star star-small" style={{top: '55%', left: '12%'}}>✦</span>
+          <span className="star star-large" style={{top: '75%', left: '8%'}}>✦</span>
+          <span className="star star-small" style={{top: '85%', left: '15%'}}>✦</span>
+          
+          <span className="star star-small" style={{top: '8%', right: '10%'}}>✦</span>
+          <span className="star star-large" style={{top: '18%', right: '15%'}}>✦</span>
+          <span className="star star-small" style={{top: '30%', right: '8%'}}>✦</span>
+          <span className="star star-large" style={{top: '50%', right: '12%'}}>✦</span>
+          <span className="star star-small" style={{top: '65%', right: '18%'}}>✦</span>
+          <span className="star star-large" style={{top: '80%', right: '10%'}}>✦</span>
+          
+          <span className="star star-small" style={{top: '10%', left: '50%'}}>✦</span>
+          <span className="star star-large" style={{top: '25%', left: '45%'}}>✦</span>
+        </div>
         <div className="hero-content">
           <h1 className="hero-title">Poossh Stamp.</h1>
           <p className="hero-subtitle">Digital loyalty cards for businesses.</p>
@@ -56,7 +74,11 @@ function LandingPage() {
             </div>
             <div className="feature-visual">
               <div className="feature-placeholder">
-                <div className="placeholder-icon">🎴</div>
+                <img 
+                  src={require('../assets/coffee-loyalty-card-5d3c26e3-ea37-4f26-949f-0a57ad922ff2.png')} 
+                  alt="Stamp Cards" 
+                  className="feature-image"
+                />
               </div>
             </div>
           </div>
@@ -65,7 +87,11 @@ function LandingPage() {
           <div className="feature-card feature-right">
             <div className="feature-visual">
               <div className="feature-placeholder">
-                <div className="placeholder-icon">📊</div>
+                <img 
+                  src={require('../assets/chart_replicated__1_-0f7240ef-c23b-489f-8dc7-b413ed7a7a1b.png')} 
+                  alt="Analytics Dashboard" 
+                  className="feature-image"
+                />
               </div>
             </div>
             <div className="feature-text">
@@ -82,7 +108,11 @@ function LandingPage() {
             </div>
             <div className="feature-visual">
               <div className="feature-placeholder">
-                <div className="placeholder-icon">💎</div>
+                <img 
+                  src={require('../assets/happy-speech-bubble__4_-1981a737-c390-4442-97c6-a615027e873b.png')} 
+                  alt="Customer Loyalty" 
+                  className="feature-image feature-image-small"
+                />
               </div>
             </div>
           </div>

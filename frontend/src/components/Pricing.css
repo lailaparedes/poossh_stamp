@@ -1,4 +1,4 @@
-/* Poossh Stamp Pricing Page - Clean Black/White Theme */
+/* Poossh Stamp Pricing Page - Clean Black/White with Purple Accents */
 
 .pricing-page {
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -42,6 +42,10 @@
 
 .logo-icon {
   font-size: 1.5rem;
+  background: linear-gradient(135deg, #9333EA, #EC4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .pricing-nav .nav-links {
@@ -67,7 +71,7 @@
 }
 
 .btn-nav-signup {
-  background: #1d1d1f;
+  background: linear-gradient(135deg, #9333EA, #EC4899);
   color: white;
   padding: 0.625rem 1.25rem;
   border-radius: 12px;
@@ -79,7 +83,7 @@
 
 .btn-nav-signup:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(147, 51, 234, 0.3);
 }
 
 /* Hero Section */
@@ -105,7 +109,7 @@
 
 .btn-contact-support {
   display: inline-block;
-  background: #1d1d1f;
+  background: linear-gradient(135deg, #9333EA, #EC4899);
   color: white;
   padding: 1rem 2.5rem;
   border-radius: 12px;
@@ -114,11 +118,12 @@
   text-decoration: none;
   transition: all 0.2s;
   font-family: inherit;
+  box-shadow: 0 4px 16px rgba(147, 51, 234, 0.3);
 }
 
 .btn-contact-support:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(147, 51, 234, 0.4);
 }
 
 .contact-subtitle {
@@ -193,7 +198,8 @@
 
 .pricing-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 40px rgba(147, 51, 234, 0.15);
+  border-color: rgba(147, 51, 234, 0.3);
 }
 
 .pricing-card-featured {
@@ -331,7 +337,7 @@
 
 .benefit-card-highlighted {
   background: white;
-  border: 2px solid #1d1d1f;
+  border: 2px solid rgba(147, 51, 234, 0.2);
 }
 
 .benefit-icon {
@@ -341,19 +347,19 @@
 .icon-box {
   width: 64px;
   height: 64px;
-  background: white;
-  border: 2px solid #1d1d1f;
+  background: linear-gradient(135deg, #9333EA, #EC4899);
+  border: none;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   font-weight: 700;
-  color: #1d1d1f;
+  color: #ffffff;
 }
 
 .benefit-card-highlighted .icon-box {
-  background: #1d1d1f;
+  background: linear-gradient(135deg, #9333EA, #EC4899);
   color: white;
 }
 
@@ -432,7 +438,7 @@
   gap: 0.5rem;
   font-weight: 600;
   font-size: 1.25rem;
-  color: #1d1d1f;
+  color: #ffffff;
 }
 
 .footer-links {
@@ -445,14 +451,14 @@
   font-size: 0.875rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
-  color: #1d1d1f;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .footer-column a {
   display: block;
-  color: #86868b;
+  color: #94A3B8;
   text-decoration: none;
   font-size: 0.9375rem;
   margin-bottom: 0.75rem;
@@ -467,12 +473,12 @@
   max-width: 1200px;
   margin: 0 auto;
   padding-top: 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
 }
 
 .footer-bottom p {
-  color: #86868b;
+  color: #94A3B8;
   font-size: 0.875rem;
   margin: 0;
 }

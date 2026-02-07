@@ -276,11 +276,13 @@
   margin-bottom: 2rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  text-align: right;
 }
 
 .detail-item {
   display: flex;
   flex-direction: column;
+  text-align: right;
 }
 
 .detail-item label {
@@ -291,6 +293,7 @@
   margin: 0 0 0.5rem 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: right;
 }
 
 .detail-item p {
@@ -298,6 +301,7 @@
   color: #1d1d1f;
   margin: 0;
   font-weight: 500;
+  text-align: right;
 }
 
 /* Stats Section */
