@@ -12,6 +12,7 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [merchantCount, setMerchantCount] = useState(0);
   const [billingLoading, setBillingLoading] = useState(false);
+  const [planChangeLoading, setPlanChangeLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     businessName: '',
@@ -140,6 +141,41 @@ function Profile() {
     if (plan === 'starter') return 'Starter';
     if (plan === 'pro') return 'Pro';
     return 'No Plan';
+  };
+
+  const handleChangePlan = async (newPlan) => {
+    if (!window.confirm(`Are you sure you want to ${newPlan === 'pro' ? 'upgrade to Pro' : 'downgrade to Starter'}? Your billing will be prorated automatically.`)) {
+      return;
+    }
+
+    setPlanChangeLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const response = await axios.post('/api/stripe/change-plan', { newPlan });
+      
+      if (response.data.success) {
+        setSuccessMessage(response.data.message);
+        
+        // Refresh user data to show new plan
+        const token = localStorage.getItem('merchantToken');
+        if (token && updateToken) {
+          await updateToken(token);
+        }
+        
+        setTimeout(() => setSuccessMessage(null), 5000);
+      } else {
+        setErrorMessage(response.data.error || 'Failed to change plan');
+        setTimeout(() => setErrorMessage(null), 5000);
+      }
+    } catch (err) {
+      console.error('Plan change error:', err);
+      setErrorMessage('Failed to change plan. Please try again.');
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setPlanChangeLoading(false);
+    }
   };
 
   return (
@@ -309,6 +345,52 @@ function Profile() {
               </div>
 
               <div className="billing-actions">
+                {/* Plan Change Buttons */}
+                {user?.subscriptionStatus === 'active' && (
+                  <div className="plan-change-section">
+                    {user.subscriptionPlan === 'starter' && (
+                      <button
+                        className="btn-upgrade"
+                        onClick={() => handleChangePlan('pro')}
+                        disabled={planChangeLoading}
+                      >
+                        {planChangeLoading ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            ✦ Upgrade to Pro
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {user.subscriptionPlan === 'pro' && (
+                      <button
+                        className="btn-downgrade"
+                        onClick={() => handleChangePlan('starter')}
+                        disabled={planChangeLoading}
+                      >
+                        {planChangeLoading ? (
+                          <>
+                            <span className="spinner-small"></span>
+                            Processing...
+                          </>
+                        ) : (
+                          'Downgrade to Starter'
+                        )}
+                      </button>
+                    )}
+                    <p className="plan-change-note">
+                      {user.subscriptionPlan === 'starter' 
+                        ? 'Get multiple stamp cards and advanced features'
+                        : 'Switch back to a single card plan'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Manage Billing Button */}
                 <button
                   className="btn-manage-billing"
                   onClick={handleManageBilling}
@@ -327,7 +409,7 @@ function Profile() {
                   )}
                 </button>
                 <p className="billing-note">
-                  Update payment method, view invoices, or manage your subscription
+                  Update payment method, view invoices, or cancel subscription
                 </p>
               </div>
             </div>

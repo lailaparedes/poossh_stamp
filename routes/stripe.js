@@ -131,6 +131,81 @@ router.get('/verify-session', authenticateMerchant, async (req, res) => {
   }
 });
 
+// Change subscription plan (upgrade/downgrade)
+router.post('/change-plan', authenticateMerchant, async (req, res) => {
+  try {
+    const { newPlan } = req.body;
+    const userId = req.merchant.userId;
+
+    console.log('Changing plan for user:', userId, 'to:', newPlan);
+
+    // Validate plan
+    if (!newPlan || (newPlan !== 'starter' && newPlan !== 'pro')) {
+      return res.json({ success: false, error: 'Invalid plan selected' });
+    }
+
+    // Get user data
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('User fetch error:', userError);
+      return res.json({ success: false, error: 'User not found' });
+    }
+
+    // Check if user has an active subscription
+    if (!user.stripe_subscription_id) {
+      return res.json({ success: false, error: 'No active subscription found' });
+    }
+
+    // Get the new price ID
+    const newPriceId = newPlan === 'starter' 
+      ? process.env.STRIPE_STARTER_PRICE_ID 
+      : process.env.STRIPE_PRO_PRICE_ID;
+
+    console.log('Updating subscription to price:', newPriceId);
+
+    // Get the current subscription
+    const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
+
+    // Update the subscription with the new price
+    const updatedSubscription = await stripe.subscriptions.update(user.stripe_subscription_id, {
+      items: [{
+        id: subscription.items.data[0].id,
+        price: newPriceId,
+      }],
+      proration_behavior: 'always_invoice', // Prorate and invoice immediately
+    });
+
+    console.log('Subscription updated:', updatedSubscription.id);
+
+    // Update user in database
+    const { error: updateError } = await supabase
+      .from('merchant_portal_users')
+      .update({
+        subscription_plan: newPlan,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.error('Database update error:', updateError);
+    }
+
+    res.json({ 
+      success: true, 
+      message: `Successfully ${newPlan === 'pro' ? 'upgraded' : 'downgraded'} to ${newPlan === 'starter' ? 'Starter' : 'Pro'} plan`,
+      newPlan: newPlan
+    });
+  } catch (error) {
+    console.error('Plan change error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Create Stripe Customer Portal Session (for managing billing)
 router.post('/create-portal-session', authenticateMerchant, async (req, res) => {
   try {
