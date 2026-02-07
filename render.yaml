@@ -21,5 +21,17 @@ services:
         sync: false # Set in Render dashboard
       - key: JWT_SECRET
         generateValue: true # Render will auto-generate a secure secret
-    healthCheckPath: /api/merchants/all
+      - key: STRIPE_SECRET_KEY
+        sync: false # Set in Render dashboard (use LIVE key for production)
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false # Set in Render dashboard (use LIVE key for production)
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false # Get from Stripe after setting up webhook
+      - key: STRIPE_STARTER_PRICE_ID
+        sync: false # Your live Starter plan price ID
+      - key: STRIPE_PRO_PRICE_ID
+        sync: false # Your live Pro plan price ID
+      - key: APP_URL
+        sync: false # Your production URL (e.g., https://poossh.com)
+    healthCheckPath: /api/health
     autoDeploy: true # Auto-deploy on git push
