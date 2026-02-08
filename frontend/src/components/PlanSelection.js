@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './PlanSelection.css';
 
@@ -7,6 +8,7 @@ function PlanSelection() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [error, setError] = useState('');
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleSelectPlan = async (plan) => {
     setSelectedPlan(plan);
@@ -152,6 +154,13 @@ function PlanSelection() {
         </div>
 
         <div className="plan-footer">
+          <button 
+            className="btn-skip-plan"
+            onClick={() => navigate('/setup')}
+            disabled={loading}
+          >
+            Skip for now
+          </button>
           <p>
             Need help deciding? <a href="mailto:contact@poossh.com">Contact our team</a>
           </p>
