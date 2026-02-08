@@ -8,7 +8,7 @@ const { generateMerchantQRCode } = require('../utils/qrcode');
 router.get('/all', async (req, res) => {
   try {
     const { data, error } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .order('name');
 
@@ -27,9 +27,9 @@ router.get('/', authenticateMerchant, async (req, res) => {
     console.log('Fetching merchants for user:', userId);
 
     const { data, error } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
-      .eq('created_by_user_id', userId)
+      .eq('created_by', userId)
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
@@ -46,61 +46,13 @@ router.get('/', authenticateMerchant, async (req, res) => {
   }
 });
 
-// Test endpoint to check QR code uniqueness (for debugging) - MUST BE BEFORE /:merchantId
-router.get('/test-qr-uniqueness', async (req, res) => {
-  try {
-    // Get all active cards with their QR code IDs
-    const { data: cards, error } = await supabase
-      .from('merchant_cards')
-      .select('id, name, qr_code_id, common_merchant_id')
-      .eq('is_active', true)
-      .order('name');
-
-    if (error) throw error;
-
-    // Check for duplicates
-    const qrCodeMap = {};
-    const duplicates = [];
-
-    cards.forEach(card => {
-      if (card.qr_code_id) {
-        if (qrCodeMap[card.qr_code_id]) {
-          duplicates.push({
-            qr_code_id: card.qr_code_id,
-            cards: [qrCodeMap[card.qr_code_id], card.name]
-          });
-        } else {
-          qrCodeMap[card.qr_code_id] = card.name;
-        }
-      }
-    });
-
-    res.json({
-      success: true,
-      total_cards: cards.length,
-      unique_qr_codes: Object.keys(qrCodeMap).length,
-      cards_without_qr: cards.filter(c => !c.qr_code_id).length,
-      duplicates: duplicates,
-      all_cards: cards.map(c => ({
-        id: c.id,
-        name: c.name,
-        qr_code_id: c.qr_code_id || 'MISSING',
-        qr_id_preview: c.qr_code_id ? c.qr_code_id.substring(0, 8) + '...' : 'MISSING'
-      }))
-    });
-  } catch (error) {
-    console.error('QR uniqueness check error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // Get merchant by ID
 router.get('/:merchantId', async (req, res) => {
   try {
     const { merchantId } = req.params;
 
     const { data, error } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .eq('id', merchantId)
       .single();
@@ -118,10 +70,10 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
   try {
     console.log('=== CREATE LOYALTY PROGRAM START ===');
     const { userId } = req.merchant;
-    const { cardName, stampsRequired, rewardDescription, color, logo } = req.body;
+    const { stampsRequired, rewardDescription, color, logo } = req.body;
     
     console.log('User ID:', userId);
-    console.log('Request body:', { cardName, stampsRequired, rewardDescription, color, logo });
+    console.log('Request body:', { stampsRequired, rewardDescription, color, logo });
 
     // Get user data (including business_name)
     console.log('Fetching user data...');
@@ -148,9 +100,9 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     if (userPlan === 'starter') {
       // Check existing card count for Starter plan
       const { data: existingCards, error: countError } = await supabase
-        .from('merchant_cards')
+        .from('merchants')
         .select('id')
-        .eq('created_by_user_id', userId)
+        .eq('created_by', userId)
         .eq('is_active', true);
 
       if (countError) {
@@ -171,44 +123,29 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     }
 
     // Create merchant in merchants table
-    const businessName = userData.business_name || userData.name || 'My Business';
+    const businessName = userData.business_name || userData.full_name || 'My Business';
     const category = 'Other'; // Default category
-    
-    // Get user's existing merchants to check for common_merchant_id
-    const { data: existingMerchants } = await supabase
-      .from('merchant_cards')
-      .select('common_merchant_id')
-      .eq('created_by_user_id', userId)
-      .not('common_merchant_id', 'is', null)
-      .limit(1);
-    
-    // Use existing common_merchant_id or create new one based on user ID
-    const commonMerchantId = existingMerchants?.[0]?.common_merchant_id || `merchant-${userId}`;
     
     console.log('Creating merchant with data:', {
       name: businessName,
-      card_name: cardName || businessName,
       logo: logo || '🏪',
       category: category,
       stamps_required: stampsRequired,
       reward_description: rewardDescription,
-      color: color,
-      common_merchant_id: commonMerchantId
+      color: color
     });
 
     const { data: newMerchant, error: merchantError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .insert([{
         name: businessName,
-        card_name: cardName || businessName, // Customer-facing name
         logo: logo || '🏪',
         category: category,
         stamps_required: stampsRequired,
         reward_description: rewardDescription,
         color: color,
-        created_by_user_id: userId,
-        is_active: true,
-        common_merchant_id: commonMerchantId
+        created_by: userId,
+        is_active: true
       }])
       .select()
       .single();
@@ -231,7 +168,7 @@ router.post('/create-loyalty-program', authenticateMerchant, async (req, res) =>
     
     // Update merchant with QR code and QR code ID
     const { error: qrUpdateError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update({ 
         qr_code: qrCodeDataUrl,
         qr_code_id: qrCodeId
@@ -329,9 +266,9 @@ router.post('/create', authenticateMerchant, async (req, res) => {
   try {
     console.log('=== CREATE NEW LOYALTY CARD ===');
     const { userId } = req.merchant;
-    const { businessName, cardName, category, stampsRequired, rewardDescription, color, logo } = req.body;
+    const { businessName, category, stampsRequired, rewardDescription, color, logo } = req.body;
     
-    console.log('Creating merchant:', { businessName, cardName, category, stampsRequired, rewardDescription, color, logo });
+    console.log('Creating merchant:', { businessName, category, stampsRequired, rewardDescription, color, logo });
 
     // Get user data to check subscription plan
     const { data: userPlanData, error: planError } = await supabase
@@ -354,9 +291,9 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     if (userPlan === 'starter') {
       // Check existing card count for Starter plan
       const { data: existingCards, error: countError } = await supabase
-        .from('merchant_cards')
+        .from('merchants')
         .select('id')
-        .eq('created_by_user_id', userId)
+        .eq('created_by', userId)
         .eq('is_active', true);
 
       if (countError) {
@@ -378,9 +315,9 @@ router.post('/create', authenticateMerchant, async (req, res) => {
 
     // Get user's existing merchants to check for common_merchant_id
     const { data: existingMerchants } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('common_merchant_id')
-      .eq('created_by_user_id', userId)
+      .eq('created_by', userId)
       .not('common_merchant_id', 'is', null)
       .limit(1);
     
@@ -391,16 +328,15 @@ router.post('/create', authenticateMerchant, async (req, res) => {
 
     // Create merchant
     const { data: newMerchant, error: merchantError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .insert([{
         name: businessName,
-        card_name: cardName || businessName, // Customer-facing name
         logo: logo || '🏪',
         category: category,
         stamps_required: stampsRequired,
         reward_description: rewardDescription,
         color: color,
-        created_by_user_id: userId,
+        created_by: userId,
         is_active: true,
         common_merchant_id: commonMerchantId
       }])
@@ -423,7 +359,7 @@ router.post('/create', authenticateMerchant, async (req, res) => {
     
     // Update merchant with QR code and QR code ID
     const { error: qrUpdateError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update({ 
         qr_code: qrCodeDataUrl,
         qr_code_id: qrCodeId
@@ -478,10 +414,10 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
 
     // Verify merchant belongs to user
     const { data: merchant, error: fetchError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .eq('id', merchantId)
-      .eq('created_by_user_id', userId)
+      .eq('created_by', userId)
       .eq('is_active', true)
       .single();
 
@@ -582,10 +518,10 @@ router.post('/generate-qr/:merchantId', authenticateMerchant, async (req, res) =
 
     // Verify the merchant belongs to this user
     const { data: merchant, error: fetchError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .eq('id', merchantId)
-      .eq('created_by_user_id', userId)
+      .eq('created_by', userId)
       .single();
 
     if (fetchError || !merchant) {
@@ -605,7 +541,7 @@ router.post('/generate-qr/:merchantId', authenticateMerchant, async (req, res) =
     
     // Update merchant with new QR code and ID
     const { error: updateError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update({ 
         qr_code: qrCodeDataUrl,
         qr_code_id: qrCodeId
@@ -636,35 +572,6 @@ router.post('/generate-qr/:merchantId', authenticateMerchant, async (req, res) =
   }
 });
 
-// Debug endpoint: Get merchant info by ID (for mobile app testing)
-router.get('/debug/:merchantId', async (req, res) => {
-  try {
-    const { merchantId } = req.params;
-
-    const { data: merchant, error } = await supabase
-      .from('merchant_cards')
-      .select('id, name, qr_code_id, stamps_required, reward_description, is_active, common_merchant_id')
-      .eq('id', merchantId)
-      .single();
-
-    if (error || !merchant) {
-      return res.json({
-        success: false,
-        error: 'Merchant not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      merchant: merchant,
-      qr_preview: merchant.qr_code_id ? merchant.qr_code_id.substring(0, 12) + '...' : 'MISSING'
-    });
-  } catch (error) {
-    console.error('Debug endpoint error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // Validate QR code (for PunchMe app to check if scanned QR code is valid)
 router.post('/validate-qr', async (req, res) => {
   try {
@@ -682,7 +589,7 @@ router.post('/validate-qr', async (req, res) => {
 
     // Get merchant and check if QR code ID matches
     const { data: merchant, error } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('id, name, qr_code_id, stamps_required, reward_description, color, logo, category')
       .eq('id', merchantId)
       .eq('is_active', true)
@@ -697,44 +604,17 @@ router.post('/validate-qr', async (req, res) => {
       });
     }
 
-    // STRICT validation: Both IDs must exist AND match exactly
-    if (!merchant.qr_code_id) {
-      console.log('❌ Card has no QR code ID in database');
-      return res.json({
-        success: true,
-        valid: false,
-        error: 'This card does not have a valid QR code. Please contact the merchant.'
-      });
-    }
-
-    if (!qrCodeId) {
-      console.log('❌ QR code missing validation ID');
-      return res.json({
-        success: true,
-        valid: false,
-        error: 'Invalid QR code format'
-      });
-    }
-
-    // Check if QR code ID matches EXACTLY (strict string comparison)
+    // Check if QR code ID matches
     const isValid = merchant.qr_code_id === qrCodeId;
 
-    console.log('🔍 QR Validation Check:');
-    console.log('  Card ID:', merchant.id);
-    console.log('  Card Name:', merchant.name);
-    console.log('  Expected QR ID:', merchant.qr_code_id);
-    console.log('  Scanned QR ID:', qrCodeId);
-    console.log('  Match:', isValid);
-
     if (isValid) {
-      console.log('✅ QR code is VALID for card:', merchant.name);
+      console.log('✅ QR code is VALID');
       return res.json({
         success: true,
         valid: true,
         merchant: {
           id: merchant.id,
-          name: merchant.card_name || merchant.name, // Use card_name (customer-facing) or fallback to name
-          businessName: merchant.name, // Internal business name
+          name: merchant.name,
           logo: merchant.logo,
           category: merchant.category,
           stampsRequired: merchant.stamps_required,
@@ -743,12 +623,13 @@ router.post('/validate-qr', async (req, res) => {
         }
       });
     } else {
-      console.log('❌ QR code is INVALID - ID mismatch for card:', merchant.name);
-      console.log('  This QR code belongs to a different card or has been regenerated');
+      console.log('❌ QR code is INVALID - ID mismatch');
+      console.log('Expected:', merchant.qr_code_id);
+      console.log('Received:', qrCodeId);
       return res.json({
         success: true,
         valid: false,
-        error: 'This QR code has been replaced or belongs to a different card. Please scan the latest QR code.'
+        error: 'This QR code has been replaced. Please scan the latest QR code from the merchant.'
       });
     }
   } catch (error) {
@@ -771,10 +652,10 @@ router.delete('/:merchantId', authenticateMerchant, async (req, res) => {
 
     // Verify merchant belongs to user
     const { data: merchant, error: fetchError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .eq('id', merchantId)
-      .eq('created_by_user_id', userId)
+      .eq('created_by', userId)
       .single();
 
     if (fetchError || !merchant) {
@@ -786,7 +667,7 @@ router.delete('/:merchantId', authenticateMerchant, async (req, res) => {
 
     // Soft delete
     const { error: deleteError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('id', merchantId);
 
@@ -808,9 +689,9 @@ router.delete('/:merchantId', authenticateMerchant, async (req, res) => {
     if (userData?.merchant_id === merchantId) {
       // Get first remaining active merchant
       const { data: remainingMerchants } = await supabase
-        .from('merchant_cards')
+        .from('merchants')
         .select('id')
-        .eq('created_by_user_id', userId)
+        .eq('created_by', userId)
         .eq('is_active', true)
         .limit(1);
 
@@ -840,11 +721,11 @@ router.delete('/:merchantId', authenticateMerchant, async (req, res) => {
 router.put('/:merchantId', authenticateMerchant, async (req, res) => {
   try {
     const { merchantId } = req.params;
-    const { businessName, cardName, stampsRequired, logo, color } = req.body;
+    const { businessName, stampsRequired, logo, color } = req.body;
     const userId = req.merchant.userId;
 
     console.log('📝 Updating merchant:', merchantId, 'User:', userId);
-    console.log('Request body:', { businessName, cardName, stampsRequired, logo, color });
+    console.log('Request body:', { businessName, stampsRequired, logo, color });
 
     // Validate required fields
     if (!businessName) {
@@ -863,7 +744,7 @@ router.put('/:merchantId', authenticateMerchant, async (req, res) => {
 
     // Verify merchant exists and belongs to user
     const { data: existingMerchant, error: checkError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('*')
       .eq('id', merchantId)
       .eq('is_active', true)
@@ -885,9 +766,9 @@ router.put('/:merchantId', authenticateMerchant, async (req, res) => {
     }
 
     console.log('Existing merchant:', existingMerchant);
-    console.log('Created by:', existingMerchant.created_by_user_id, 'User ID:', userId);
+    console.log('Created by:', existingMerchant.created_by, 'User ID:', userId);
 
-    if (existingMerchant.created_by_user_id !== userId) {
+    if (existingMerchant.created_by !== userId) {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to update this merchant'
@@ -899,10 +780,6 @@ router.put('/:merchantId', authenticateMerchant, async (req, res) => {
       name: businessName,  // Column is 'name' not 'business_name'
       updated_at: new Date().toISOString()
     };
-
-    if (cardName) {
-      updateData.card_name = cardName;
-    }
 
     if (stampsRequired) {
       updateData.stamps_required = stampsRequired;
@@ -920,7 +797,7 @@ router.put('/:merchantId', authenticateMerchant, async (req, res) => {
 
     // Update merchant
     const { data: updatedMerchant, error: updateError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update(updateData)
       .eq('id', merchantId)
       .select()

@@ -26,29 +26,29 @@ async function authenticateMerchant(req, res, next) {
     console.log('🔐 Attempting JWT verification...');
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log('✅ JWT verified successfully');
+    console.log('🔐 Decoded userId:', decoded.userId);
 
-    // Check if session exists and is valid
-    const { data: session, error: sessionError } = await supabase
-      .from('merchant_portal_sessions')
-      .select('*')
-      .eq('token', token)
-      .eq('user_id', decoded.userId)
-      .gt('expires_at', new Date().toISOString())
-      .single();
+    // Verify user still exists in database
+    const { data: users, error: userError } = await supabase
+      .from('portal_merchant_users')
+      .select('id, email')
+      .eq('id', decoded.userId)
+      .limit(1);
 
-    if (sessionError || !session) {
+    if (userError || !users || users.length === 0) {
+      console.log('❌ User not found in database');
       return res.status(401).json({ 
         success: false, 
         error: 'Invalid or expired session' 
       });
     }
 
+    console.log('✅ User verified in database');
+
     // Attach merchant info to request
     req.merchant = {
       userId: decoded.userId,
-      merchantId: decoded.merchantId,
-      email: decoded.email,
-      role: decoded.role
+      email: decoded.email
     };
 
     next();

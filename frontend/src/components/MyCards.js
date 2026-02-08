@@ -25,6 +25,7 @@ function MyCards() {
   // New card form state
   const [formData, setFormData] = useState({
     businessName: '',
+    cardName: '',
     category: 'Food & Beverage',
     stampsRequired: 10,
     rewardDescription: '',
@@ -103,6 +104,7 @@ function MyCards() {
       // Reset form and close
       setFormData({
         businessName: '',
+        cardName: '',
         category: 'Food & Beverage',
         stampsRequired: 10,
         rewardDescription: '',
@@ -251,6 +253,18 @@ function MyCards() {
             <form onSubmit={handleCreateCard}>
               <div className="form-grid">
             <div className="form-group">
+              <label>Card Name *</label>
+              <input
+                type="text"
+                value={formData.cardName}
+                onChange={(e) => setFormData({ ...formData, cardName: e.target.value })}
+                required
+                placeholder="e.g., Coffee Rewards, VIP Card"
+              />
+              <small style={{ color: '#666', fontSize: '12px' }}>What customers see when they scan</small>
+            </div>
+
+            <div className="form-group">
               <label>Business Name *</label>
               <input
                 type="text"
@@ -319,8 +333,61 @@ function MyCards() {
             </div>
 
             <div className="form-group">
-              <label>Logo Emoji</label>
-              <div className="emoji-picker">
+              <label>Logo</label>
+              <small style={{ display: 'block', marginBottom: '0.75rem', color: '#86868b' }}>
+                Choose an emoji or upload your own logo image
+              </small>
+              
+              {/* Custom Logo Upload */}
+              <div className="logo-upload-section">
+                <input
+                  type="file"
+                  id="create-logo-upload"
+                  accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      // Check file size (max 2MB)
+                      if (file.size > 2 * 1024 * 1024) {
+                        setError('Image must be less than 2MB');
+                        setTimeout(() => setError(null), 3000);
+                        return;
+                      }
+                      
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ ...formData, logo: reader.result });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-upload-logo"
+                  onClick={() => document.getElementById('create-logo-upload').click()}
+                >
+                  Upload Custom Logo
+                </button>
+                
+                {/* Logo Preview */}
+                {formData.logo && formData.logo.startsWith('data:image') && (
+                  <div className="logo-preview">
+                    <img src={formData.logo} alt="Logo preview" />
+                    <button
+                      type="button"
+                      className="btn-remove-logo"
+                      onClick={() => setFormData({ ...formData, logo: '🏪' })}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Emoji Options */}
+              <div className="emoji-picker" style={{ marginTop: '1rem' }}>
                 {emojiOptions.map(emoji => (
                   <button
                     key={emoji}
@@ -363,13 +430,13 @@ function MyCards() {
                 <div className="card-header">
                   <div className="card-logo">
                     {merchant.logo && merchant.logo.startsWith('data:image') ? (
-                      <img src={merchant.logo} alt={merchant.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      <img src={merchant.logo} alt={merchant.card_name || merchant.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     ) : (
                       merchant.logo || '🏪'
                     )}
                   </div>
                   <div className="card-info">
-                    <h3>{merchant.name}</h3>
+                    <h3>{merchant.card_name || merchant.name}</h3>
                     <p className="card-category">{merchant.category}</p>
                   </div>
                 </div>

@@ -6,6 +6,7 @@ import './Setup.css';
 
 function Setup() {
   const [formData, setFormData] = useState({
+    cardName: '',
     stampsRequired: 10,
     rewardDescription: '',
     color: '#667eea',
@@ -26,6 +27,8 @@ function Setup() {
     { name: 'Teal', value: '#38B2AC' },
     { name: 'Brown', value: '#8B4513' }
   ];
+
+  const emojiOptions = ['☕', '🍕', '🍔', '🍰', '💇', '🏋️', '🛒', '🎬', '🏪', '💼', '🎨', '🍜'];
 
   const handleChange = (e) => {
     setFormData({
@@ -128,6 +131,22 @@ function Setup() {
               </div>
             )}
 
+            {/* Card Name */}
+            <div className="form-group">
+              <label htmlFor="cardName">Card Name *</label>
+              <input
+                id="cardName"
+                name="cardName"
+                type="text"
+                value={formData.cardName}
+                onChange={handleChange}
+                placeholder={`e.g., ${user?.business_name || 'Coffee Shop'} Rewards`}
+                required
+                disabled={loading}
+              />
+              <small className="hint">This is what customers see when they scan your QR code</small>
+            </div>
+
             {/* Stamps Required */}
             <div className="form-group">
               <label>How many stamps to earn a reward? *</label>
@@ -187,27 +206,87 @@ function Setup() {
 
             {/* Logo */}
             <div className="form-group">
-              <label htmlFor="logo">Logo (Optional)</label>
-              <input
-                id="logo"
-                name="logo"
-                type="text"
-                value={formData.logo}
-                onChange={handleChange}
-                placeholder="Emoji or image URL (e.g., ☕ or https://...)"
-                disabled={loading}
-              />
-              <small className="hint">Use an emoji or paste an image URL</small>
+              <label>Logo (Optional)</label>
+              <small className="hint">Choose an emoji or upload your own logo image</small>
+              
+              {/* Custom Logo Upload */}
+              <div className="logo-upload-section">
+                <input
+                  type="file"
+                  id="setup-logo-upload"
+                  accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      // Check file size (max 2MB)
+                      if (file.size > 2 * 1024 * 1024) {
+                        setError('Image must be less than 2MB');
+                        return;
+                      }
+                      
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ ...formData, logo: reader.result });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="btn-upload-logo"
+                  onClick={() => document.getElementById('setup-logo-upload').click()}
+                  disabled={loading}
+                >
+                  Upload Custom Logo
+                </button>
+                
+                {/* Logo Preview */}
+                {formData.logo && formData.logo.startsWith('data:image') && (
+                  <div className="logo-preview">
+                    <img src={formData.logo} alt="Logo preview" />
+                    <button
+                      type="button"
+                      className="btn-remove-logo"
+                      onClick={() => setFormData({ ...formData, logo: '' })}
+                      disabled={loading}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              {/* Emoji Options */}
+              <div className="emoji-picker" style={{ marginTop: '1rem' }}>
+                {emojiOptions.map(emoji => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    className={`emoji-option ${formData.logo === emoji ? 'active' : ''}`}
+                    onClick={() => setFormData({ ...formData, logo: emoji })}
+                    disabled={loading}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Preview Card */}
             <div className="preview-section">
               <div className="preview-card" style={{ borderColor: formData.color }}>
                 <div className="preview-logo">
-                  {formData.logo || '🏪'}
+                  {formData.logo && formData.logo.startsWith('data:image') ? (
+                    <img src={formData.logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    formData.logo || '🏪'
+                  )}
                 </div>
                 <div className="preview-info">
-                  <h3>{user?.fullName || user?.name || 'Punch'}</h3>
+                  <h3>{formData.cardName || user?.business_name || 'Your Card'}</h3>
                   <p>{formData.stampsRequired} stamps = {formData.rewardDescription || 'Your reward'}</p>
                 </div>
               </div>

@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const supabase = require('../config/supabase');
+const { createClient } = require('@supabase/supabase-js');
 const authenticateMerchant = require('../middleware/auth');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 // Create Stripe Checkout Session
 router.post('/create-checkout-session', authenticateMerchant, async (req, res) => {
@@ -18,13 +23,11 @@ router.post('/create-checkout-session', authenticateMerchant, async (req, res) =
     }
 
     // Get user data
-    const { data: users, error: userError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-
-    const user = users && users.length > 0 ? users[0] : null;
+      .single();
 
     if (userError || !user) {
       console.error('User fetch error:', userError);
@@ -142,13 +145,11 @@ router.post('/change-plan', authenticateMerchant, async (req, res) => {
     }
 
     // Get user data
-    const { data: users, error: userError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-
-    const user = users && users.length > 0 ? users[0] : null;
+      .single();
 
     if (userError || !user) {
       console.error('User fetch error:', userError);
@@ -213,13 +214,11 @@ router.post('/create-portal-session', authenticateMerchant, async (req, res) => 
     console.log('Creating customer portal session for user:', userId);
 
     // Get user data
-    const { data: users, error: userError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-
-    const user = users && users.length > 0 ? users[0] : null;
+      .single();
 
     if (userError || !user) {
       console.error('User fetch error:', userError);

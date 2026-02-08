@@ -234,7 +234,10 @@ function Customers() {
                   onClick={() => setSelectedCustomer(customer)}
                 >
                   <div className="customer-item-header">
-                    <h3>{customer.name}</h3>
+                    <div className="customer-name-row">
+                      <h3>{customer.name}</h3>
+                      <span className="member-since">Member since {formatDate(customer.joinedDate)}</span>
+                    </div>
                     <div className="customer-stats-mini">
                       <span className="stat-badge">{getTotalVisits(customer)} visits</span>
                       <span className="stat-badge">{customer.totalRedemptions} redemptions</span>
@@ -242,7 +245,6 @@ function Customers() {
                   </div>
                   
                   <p className="customer-email-mini">{customer.email}</p>
-                  <p className="customer-joined">Joined {formatDate(customer.joinedDate)}</p>
                   
                   <div className="customer-cards-count">
                     <span>{customer.cards.length} active {customer.cards.length === 1 ? 'card' : 'cards'}</span>

@@ -21,6 +21,7 @@ function Dashboard() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [editFormData, setEditFormData] = useState({
     businessName: '',
+    cardName: '',
     stampsRequired: 10,
     logo: '🏪',
     color: '#667eea'
@@ -58,15 +59,18 @@ function Dashboard() {
 
       // Fetch dashboard analytics
       const dashboardRes = await axios.get('/api/analytics/dashboard');
-      setDashboardData(dashboardRes.data.data);
+      const data = dashboardRes.data.data;
+      setDashboardData(data);
 
-      // Fetch new cards data
-      const newCardsRes = await axios.get('/api/analytics/new-cards-daily');
-      setNewCardsData(newCardsRes.data.data);
+      // Use chart data from dashboard response
+      setNewCardsData(data.customersChart || []);
+      setStampActivityData(data.stampsChart || []);
 
-      // Fetch stamp activity
-      const stampActivityRes = await axios.get('/api/analytics/stamp-activity');
-      setStampActivityData(stampActivityRes.data.data);
+      // Update merchant info if available from analytics
+      if (data.merchantCardData) {
+        // We could update the displayed merchant here if needed
+        console.log('Current merchant card:', data.merchantCardData);
+      }
 
       // Get QR code from user.merchant if available
       if (user?.merchant?.qr_code) {
@@ -102,6 +106,7 @@ function Dashboard() {
     if (user?.merchant) {
       setEditFormData({
         businessName: user.merchant.name || '',
+        cardName: user.merchant.card_name || user.merchant.name || '',
         stampsRequired: user.merchant.stamps_required || 10,
         logo: user.merchant.logo || '🏪',
         color: user.merchant.color || '#667eea'
@@ -306,8 +311,8 @@ function Dashboard() {
               )}
             </div>
             <div className="merchant-info">
-              <h2>{user?.merchant?.name}</h2>
-              <p>{user?.merchant?.category}</p>
+              <h2>{dashboardData?.merchantName || user?.merchant?.card_name || user?.merchant?.name || 'Loading...'}</h2>
+              <p>{user?.merchant?.category || 'Loyalty Card'}</p>
             </div>
           </div>
           <div className="header-actions">
@@ -339,6 +344,18 @@ function Dashboard() {
             <h3>Edit Card Details</h3>
             <form onSubmit={handleEditCard}>
               <div className="form-grid">
+                <div className="form-group">
+                  <label>Card Name *</label>
+                  <input
+                    type="text"
+                    value={editFormData.cardName}
+                    onChange={(e) => setEditFormData({ ...editFormData, cardName: e.target.value })}
+                    required
+                    placeholder="e.g., Coffee Rewards, VIP Card"
+                  />
+                  <small style={{ color: '#666', fontSize: '12px' }}>What customers see</small>
+                </div>
+
                 <div className="form-group">
                   <label>Business Name *</label>
                   <input
@@ -470,35 +487,35 @@ function Dashboard() {
               <div className="stat-content">
                 <h3>Active Cards</h3>
                 <p className="stat-value">{dashboardData.activeCards}</p>
-                <p className="stat-label">Current active stamp cards</p>
+                <p className="stat-label">Unique customers with this card</p>
               </div>
             </div>
 
             <div className="stat-card">
               <div className="stat-content">
-                <h3>Total Rewards</h3>
-                <p className="stat-value">{dashboardData.totalRewards}</p>
-                <p className="stat-label">Rewards earned by customers</p>
+                <h3>Total Stamps</h3>
+                <p className="stat-value">{dashboardData.totalStamps || 0}</p>
+                <p className="stat-label">All stamps accumulated</p>
+              </div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-content">
+                <h3>Unredeemed</h3>
+                <p className="stat-value">{dashboardData.unredeemedRewards || 0}</p>
+                <p className="stat-label">Rewards waiting to be redeemed</p>
               </div>
             </div>
 
             <div className="stat-card">
               <div className="stat-content">
                 <h3>Redeemed</h3>
-                <p className="stat-value">{dashboardData.redeemedRewards}</p>
+                <p className="stat-value">{dashboardData.redeemedRewards || 0}</p>
                 <p className="stat-label">
-                  {dashboardData.totalRewards > 0 
-                    ? `${Math.round((dashboardData.redeemedRewards / dashboardData.totalRewards) * 100)}% redemption rate`
+                  {(dashboardData.unredeemedRewards + dashboardData.redeemedRewards) > 0 
+                    ? `${Math.round((dashboardData.redeemedRewards / (dashboardData.unredeemedRewards + dashboardData.redeemedRewards)) * 100)}% redemption rate`
                     : 'No rewards yet'}
                 </p>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-content">
-                <h3>Pending</h3>
-                <p className="stat-value">{dashboardData.pendingRewards}</p>
-                <p className="stat-label">Rewards waiting to be redeemed</p>
               </div>
             </div>
           </div>
@@ -553,7 +570,7 @@ function Dashboard() {
 
         <div className="charts-container">
           <div className="chart-card">
-            <h3>New Cards Created (Last 30 Days)</h3>
+            <h3>New Customers (Last 30 Days)</h3>
             {newCardsData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={newCardsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -600,7 +617,7 @@ function Dashboard() {
           </div>
 
           <div className="chart-card">
-            <h3>Daily Stamp Activity (Last 30 Days)</h3>
+            <h3>Stamps Acquired Per Day (Last 30 Days)</h3>
             {stampActivityData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
                 <AreaChart data={stampActivityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -633,7 +650,7 @@ function Dashboard() {
                   />
                   <Area 
                     type="monotone" 
-                    dataKey="stamps" 
+                    dataKey="count" 
                     stroke="#667eea" 
                     strokeWidth={2.5}
                     fillOpacity={1}
@@ -642,7 +659,7 @@ function Dashboard() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <p className="no-data">No stamp activity data available</p>
+              <p className="no-data">No stamp data available yet</p>
             )}
           </div>
         </div>

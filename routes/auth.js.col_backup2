@@ -22,13 +22,13 @@ router.post('/signup', async (req, res) => {
     }
 
     // Check if email already exists
-    const { data: existingUsers } = await supabase
+    const { data: existingUser } = await supabase
       .from('portal_merchant_users')
       .select('id')
       .eq('email', email)
-      .limit(1);
+      .single();
 
-    if (existingUsers && existingUsers.length > 0) {
+    if (existingUser) {
       return res.status(400).json({
         success: false,
         error: 'Email already registered'
@@ -38,24 +38,26 @@ router.post('/signup', async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create merchant portal user (schema v2.0)
-    const { data: newUsers, error: userError } = await supabase
+    // Create merchant portal user (no merchant_id yet - they'll create that in setup)
+    const { data: newUser, error: userError } = await supabase
       .from('portal_merchant_users')
       .insert([{
         email,
         password_hash: passwordHash,
         name: ownerName,
-        business_name: businessName
+        business_name: businessName,
+        role: 'owner',
+        is_active: true,
+        merchant_id: null // Will be set when they create their loyalty card
       }])
-      .select();
-    
-    const newUser = newUsers && newUsers.length > 0 ? newUsers[0] : null;
+      .select()
+      .single();
 
-    if (userError || !newUser) {
+    if (userError) {
       console.error('User creation error:', userError);
       return res.status(500).json({
         success: false,
-        error: userError?.message || 'Failed to create account. Please try again.'
+        error: 'Failed to create account. Please try again.'
       });
     }
 
@@ -87,17 +89,16 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Find user by email (schema v2.0)
-    const { data: users, error: userError } = await supabase
+    // Find user by email (first get user, then get merchant separately to avoid join issues)
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('email', email)
-      .limit(1);
+      .eq('is_active', true)
+      .single();
 
-    console.log('User found:', users && users.length > 0 ? 'YES' : 'NO');
+    console.log('User found:', user ? 'YES' : 'NO');
     console.log('User error:', userError?.message || 'NONE');
-    
-    const user = users && users.length > 0 ? users[0] : null;
 
     if (userError || !user) {
       console.log('❌ User not found or error');
@@ -107,15 +108,20 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', user.id)
-      .limit(1);
-    
-    user.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
-    console.log('Merchant loaded:', user.merchant?.name || 'NO MERCHANT');
+    // Get merchant data if user has a merchant_id
+    if (user.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchant_cards')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', user.merchant_id)
+        .single();
+      
+      user.merchant = merchant;
+      console.log('Merchant loaded:', merchant?.name || 'NO MERCHANT');
+    } else {
+      user.merchant = null;
+      console.log('No merchant for this user yet');
+    }
 
     // Verify password
     console.log('Checking password...');
@@ -130,18 +136,40 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Generate JWT token (schema v2.0)
+    // Generate JWT token
     const token = jwt.sign(
       { 
         userId: user.id,
-        email: user.email
+        merchantId: user.merchant_id,
+        email: user.email,
+        role: user.role
       },
       JWT_SECRET,
       { expiresIn: TOKEN_EXPIRY }
     );
 
-    // Note: merchant_portal_sessions table removed in schema v2.0
-    // Sessions managed via JWT tokens only
+    // Create session in database
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+    const { error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .insert([{
+        user_id: user.id,
+        merchant_id: user.merchant_id,
+        token: token,
+        expires_at: expiresAt.toISOString()
+      }]);
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    }
+
+    // Update last login
+    await supabase
+      .from('portal_merchant_users')
+      .update({ last_login: new Date().toISOString() })
+      .eq('id', user.id);
 
     // Return user info and token
     res.json({
@@ -153,6 +181,7 @@ router.post('/login', async (req, res) => {
           email: user.email,
           fullName: user.name,
           businessName: user.business_name || user.name,
+          role: user.role,
           createdAt: user.created_at,
           merchant: user.merchant,
           subscriptionStatus: user.subscription_status,
@@ -182,17 +211,32 @@ router.get('/verify', async (req, res) => {
       });
     }
 
-    // Verify JWT (schema v2.0 - no session table)
+    // Verify JWT
     const decoded = jwt.verify(token, JWT_SECRET);
 
+    // Check if session exists and is valid
+    const { data: session, error: sessionError } = await supabase
+      .from('merchant_portal_sessions')
+      .select('*')
+      .eq('token', token)
+      .eq('user_id', decoded.userId)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid or expired session' 
+      });
+    }
+
     // Get user info
-    const { data: users, error: userError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', decoded.userId)
-      .limit(1);
-    
-    const user = users && users.length > 0 ? users[0] : null;
+      .eq('is_active', true)
+      .single();
 
     if (userError || !user) {
       return res.status(401).json({ 
@@ -201,14 +245,18 @@ router.get('/verify', async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', user.id)
-      .limit(1);
-    
-    user.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+    // Get merchant data if user has a merchant_id
+    if (user.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchant_cards')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', user.merchant_id)
+        .single();
+      
+      user.merchant = merchant;
+    } else {
+      user.merchant = null;
+    }
 
     res.json({
       success: true,
@@ -218,6 +266,7 @@ router.get('/verify', async (req, res) => {
           email: user.email,
           fullName: user.name,
           businessName: user.business_name || user.name,
+          role: user.role,
           createdAt: user.created_at,
           merchant: user.merchant,
           subscriptionStatus: user.subscription_status,
@@ -276,13 +325,11 @@ router.put('/profile', authenticateMerchant, async (req, res) => {
     }
 
     // Get current user data
-    const { data: users, error: userError } = await supabase
+    const { data: user, error: userError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-    
-    const user = users && users.length > 0 ? users[0] : null;
+      .single();
 
     if (userError || !user) {
       console.error('User fetch error:', userError);
@@ -344,13 +391,11 @@ router.put('/profile', authenticateMerchant, async (req, res) => {
     }
 
     // Get updated user data with merchant info
-    const { data: updatedUsers, error: fetchError } = await supabase
+    const { data: updatedUser, error: fetchError } = await supabase
       .from('portal_merchant_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-    
-    const updatedUser = updatedUsers && updatedUsers.length > 0 ? updatedUsers[0] : null;
+      .single();
 
     if (fetchError || !updatedUser) {
       console.error('Fetch updated user error:', fetchError);
@@ -360,21 +405,25 @@ router.put('/profile', authenticateMerchant, async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', updatedUser.id)
-      .limit(1);
-    
-    updatedUser.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+    // Get merchant data if user has a merchant_id
+    if (updatedUser.merchant_id) {
+      const { data: merchant } = await supabase
+        .from('merchant_cards')
+        .select('id, name, logo, category, color, qr_code')
+        .eq('id', updatedUser.merchant_id)
+        .single();
+      
+      updatedUser.merchant = merchant;
+    } else {
+      updatedUser.merchant = null;
+    }
 
     // Generate new token with updated info
     const tokenPayload = {
       userId: updatedUser.id,
       email: updatedUser.email,
-      merchantId: updatedUser.created_by_user_id,
-      role: updatedUser
+      merchantId: updatedUser.merchant_id,
+      role: updatedUser.role
     };
 
     const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
@@ -395,7 +444,7 @@ router.put('/profile', authenticateMerchant, async (req, res) => {
           email: updatedUser.email,
           fullName: updatedUser.name,
           businessName: updatedUser.business_name || updatedUser.name,
-          role: updatedUser,
+          role: updatedUser.role,
           createdAt: updatedUser.created_at,
           merchant: updatedUser.merchant
         },

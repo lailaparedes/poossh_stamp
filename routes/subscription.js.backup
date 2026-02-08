@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/supabase');
+const { createClient } = require('@supabase/supabase-js');
 const authenticateMerchant = require('../middleware/auth');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 // Check subscription status and deactivate cards if needed
 router.post('/check-grace-period', authenticateMerchant, async (req, res) => {
@@ -9,13 +14,11 @@ router.post('/check-grace-period', authenticateMerchant, async (req, res) => {
     const userId = req.merchant.userId;
 
     // Get user data
-    const { data: users, error: userError } = await supabase
-      .from('portal_merchant_users')
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
       .select('*')
       .eq('id', userId)
-      .limit(1);
-
-    const user = users && users.length > 0 ? users[0] : null;
+      .single();
 
     if (userError || !user) {
       return res.json({ success: false, error: 'User not found' });
@@ -29,9 +32,9 @@ router.post('/check-grace-period', authenticateMerchant, async (req, res) => {
       if (now > gracePeriodEnd) {
         // Grace period expired - deactivate all cards
         const { error: deactivateError } = await supabase
-          .from('merchant_cards')
+          .from('merchants')
           .update({ is_active: false })
-          .eq('created_by_user_id', userId);
+          .eq('created_by', userId);
 
         if (deactivateError) {
           console.error('Error deactivating cards:', deactivateError);
@@ -76,21 +79,19 @@ router.get('/card-count', authenticateMerchant, async (req, res) => {
     const userId = req.merchant.userId;
 
     // Get user subscription plan
-    const { data: users, error: userError } = await supabase
-      .from('portal_merchant_users')
+    const { data: user, error: userError } = await supabase
+      .from('merchant_portal_users')
       .select('subscription_plan, subscription_status')
       .eq('id', userId)
-      .limit(1);
+      .single();
 
-    const user = users && users.length > 0 ? users[0] : null;
-
-    if (userError || !user) {
+    if (userError) {
       return res.json({ success: false, error: 'User not found' });
     }
 
     // Get active card count
     const { data: cards, error: cardsError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .select('id')
       .eq('created_by', userId)
       .eq('is_active', true);
@@ -140,7 +141,7 @@ router.post('/reactivate-cards', authenticateMerchant, async (req, res) => {
 
     // Reactivate all cards for this user
     const { error: reactivateError } = await supabase
-      .from('merchant_cards')
+      .from('merchants')
       .update({ is_active: true })
       .eq('created_by', userId);
 
