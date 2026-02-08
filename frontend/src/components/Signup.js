@@ -73,9 +73,7 @@ function Signup() {
       
       if (loginResult.success) {
         setTimeout(() => {
-          // Skip plan selection and go directly to setup
-          // Stripe subscriptions are optional
-          navigate('/setup');
+          navigate('/select-plan');
         }, 100);
       } else {
         navigate('/login');
