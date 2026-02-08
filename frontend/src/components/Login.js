@@ -11,11 +11,6 @@ function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const useDemoAccount = () => {
-    setEmail('jc@mail.com');
-    setPassword('password123');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -109,20 +104,6 @@ function Login() {
                 'Sign In'
               )}
             </button>
-
-            <div className="demo-section">
-              <div className="demo-divider">
-                <span>or try demo</span>
-              </div>
-              <button 
-                type="button" 
-                className="btn-demo" 
-                onClick={useDemoAccount}
-              >
-                Use Demo Account
-              </button>
-              <p className="demo-hint">Email: jc@mail.com • Password: password123</p>
-            </div>
 
             <div className="form-footer">
               <p>

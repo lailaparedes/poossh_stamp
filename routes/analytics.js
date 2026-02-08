@@ -105,17 +105,34 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
     console.log('[Analytics] Cache miss - fetching fresh data');
 
     // Get analytics from merchant_card_analytics table
-    console.log('[Analytics] Querying merchant_card_analytics for:', merchantId);
+    console.log('[Analytics] Querying merchant_card_analytics for merchantId:', merchantId);
     const { data: analyticsData, error: analyticsError } = await supabase
       .from('merchant_card_analytics')
       .select('*')
       .eq('merchant_card_id', merchantId)
       .limit(1);
 
-    console.log('[Analytics] Query result:', { 
+    console.log('[Analytics] Analytics query result:', { 
       found: analyticsData?.length || 0, 
+      data: analyticsData,
       error: analyticsError ? analyticsError.message : 'none' 
     });
+
+    // If no analytics found, check if the card exists and create analytics entry
+    if (!analyticsData || analyticsData.length === 0) {
+      console.log('[Analytics] No analytics found, checking if merchant card exists...');
+      const { data: cardCheck } = await supabase
+        .from('merchant_cards')
+        .select('id, name')
+        .eq('id', merchantId)
+        .limit(1);
+      
+      console.log('[Analytics] Merchant card check:', cardCheck);
+      
+      if (cardCheck && cardCheck.length > 0) {
+        console.log('[Analytics] Card exists but no analytics - will use fallback data');
+      }
+    }
 
     if (analyticsError) {
       console.error('[Analytics] Fetch error:', analyticsError);
@@ -156,7 +173,10 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
     console.log('[Analytics] ✅ Found analytics:', {
       name: analytics.merchant_name,
       activeCards: analytics.active_cards_count,
-      stamps: analytics.total_stamps_collected
+      stamps: analytics.total_stamps_collected,
+      unredeemed: analytics.unredeemed_rewards_count,
+      redeemed: analytics.total_rewards_redeemed,
+      rawData: analytics
     });
 
     // 5. New customers per day (last 30 days)
@@ -232,9 +252,12 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
     const dashboardData = {
       activeCards: analytics.active_cards_count || 0,
       totalStamps: analytics.total_stamps_collected || 0,
-      unredeemedRewards: analytics.unredeemed_rewards_count || 0,
+      totalRewards: analytics.total_rewards_earned || 0,
       redeemedRewards: analytics.total_rewards_redeemed || 0,
-      totalRewardsEarned: analytics.total_rewards_earned || 0,
+      pendingRewards: analytics.unredeemed_rewards_count || 0,
+      redemptionRate: analytics.total_rewards_earned > 0 
+        ? Math.round((analytics.total_rewards_redeemed / analytics.total_rewards_earned) * 100) 
+        : 0,
       merchantName: merchant?.card_name || merchant?.name || analytics.merchant_name, // Use card_name first
       lastCalculated: analytics.last_calculated_at,
       merchantCardData: merchant,

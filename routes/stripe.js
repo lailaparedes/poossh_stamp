@@ -19,6 +19,10 @@ router.post('/create-checkout-session', authenticateMerchant, async (req, res) =
     const userId = req.merchant.userId;
 
     console.log('✅ Auth successful - Creating checkout session for user:', userId, 'plan:', plan);
+    console.log('📋 Price IDs configured:', {
+      starter: process.env.STRIPE_STARTER_PRICE_ID,
+      pro: process.env.STRIPE_PRO_PRICE_ID
+    });
 
     // Validate plan
     if (!plan || (plan !== 'starter' && plan !== 'pro')) {
@@ -44,7 +48,19 @@ router.post('/create-checkout-session', authenticateMerchant, async (req, res) =
       ? process.env.STRIPE_STARTER_PRICE_ID 
       : process.env.STRIPE_PRO_PRICE_ID;
 
-    console.log('Using price ID:', priceId);
+    console.log('🔍 Plan selection debug:', {
+      requestedPlan: plan,
+      starterPriceId: process.env.STRIPE_STARTER_PRICE_ID,
+      proPriceId: process.env.STRIPE_PRO_PRICE_ID,
+      selectedPriceId: priceId
+    });
+
+    if (!priceId) {
+      console.error('❌ Price ID missing for plan:', plan);
+      return res.json({ success: false, error: `Price ID not configured for ${plan} plan` });
+    }
+
+    console.log('✅ Using price ID:', priceId);
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
