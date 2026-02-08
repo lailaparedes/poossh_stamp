@@ -1,12 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = process.env.STRIPE_SECRET_KEY ? require('stripe')(process.env.STRIPE_SECRET_KEY) : null;
 const supabase = require('../config/supabase');
 const authenticateMerchant = require('../middleware/auth');
 
 // Create Stripe Checkout Session
 router.post('/create-checkout-session', authenticateMerchant, async (req, res) => {
   try {
+    // Check if Stripe is configured
+    if (!stripe) {
+      return res.status(503).json({ 
+        success: false, 
+        error: 'Stripe is not configured. Please contact support.' 
+      });
+    }
+
     const { plan } = req.body;
     const userId = req.merchant.userId;
 
@@ -70,6 +78,10 @@ router.post('/create-checkout-session', authenticateMerchant, async (req, res) =
 // Verify checkout session (called after successful payment)
 router.get('/verify-session', authenticateMerchant, async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ success: false, error: 'Stripe is not configured' });
+    }
+    
     const { session_id } = req.query;
     const userId = req.merchant.userId;
 
@@ -131,6 +143,10 @@ router.get('/verify-session', authenticateMerchant, async (req, res) => {
 // Change subscription plan (upgrade/downgrade)
 router.post('/change-plan', authenticateMerchant, async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ success: false, error: 'Stripe is not configured' });
+    }
+    
     const { newPlan } = req.body;
     const userId = req.merchant.userId;
 
@@ -208,6 +224,10 @@ router.post('/change-plan', authenticateMerchant, async (req, res) => {
 // Create Stripe Customer Portal Session (for managing billing)
 router.post('/create-portal-session', authenticateMerchant, async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(503).json({ success: false, error: 'Stripe is not configured' });
+    }
+    
     const userId = req.merchant.userId;
 
     console.log('Creating customer portal session for user:', userId);
@@ -247,6 +267,10 @@ router.post('/create-portal-session', authenticateMerchant, async (req, res) => 
 
 // Stripe Webhook Handler
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ success: false, error: 'Stripe is not configured' });
+  }
+  
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
