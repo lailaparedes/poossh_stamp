@@ -8,8 +8,8 @@ services:
     env: node
     region: oregon # Change to your preferred region
     plan: free # or 'starter' for production
-    buildCommand: npm run build:all
-    startCommand: npm start
+    buildCommand: npm install && cd frontend && npm install && npm run build && cd ..
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production

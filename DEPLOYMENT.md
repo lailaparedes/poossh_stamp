@@ -55,16 +55,16 @@
 
 ### Build Commands
 ```bash
-# Install backend dependencies
-cd backend && npm install
+# Install root dependencies (Express, etc.)
+npm install
 
 # Install frontend dependencies and build
-cd frontend && npm install && npm run build
+cd frontend && npm install && npm run build && cd ..
 ```
 
 ### Start Command
 ```bash
-node backend/server.js
+node server.js
 ```
 
 ### Environment Variables Needed
