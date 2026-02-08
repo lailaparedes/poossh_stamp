@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../backend/config/supabase');
+const supabase = require('../config/supabase');
 
 // Test database connection
 router.get('/check', async (req, res) => {
