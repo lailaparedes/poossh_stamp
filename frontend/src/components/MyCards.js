@@ -456,6 +456,28 @@ function MyCards() {
                   </div>
                 </div>
 
+                {/* QR Code Preview */}
+                {merchant.qr_code && (
+                  <div className="card-qr-preview">
+                    <div className="qr-preview-label">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="3" width="8" height="8" />
+                        <rect x="13" y="3" width="8" height="8" />
+                        <rect x="3" y="13" width="8" height="8" />
+                        <rect x="13" y="13" width="8" height="8" />
+                      </svg>
+                      <span>Unique QR Code</span>
+                    </div>
+                    <img src={merchant.qr_code} alt={`QR code for ${merchant.card_name || merchant.name}`} className="qr-mini-preview" />
+                    <p className="qr-preview-hint">View dashboard to download</p>
+                  </div>
+                )}
+                {!merchant.qr_code && (
+                  <div className="card-qr-missing">
+                    <span style={{ fontSize: '12px', color: '#999' }}>⚠️ No QR code generated yet</span>
+                  </div>
+                )}
+
                 <div className="card-actions">
                   <button
                     className="btn-view-dashboard"

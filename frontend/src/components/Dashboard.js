@@ -170,12 +170,15 @@ function Dashboard() {
     try {
       const link = document.createElement('a');
       link.href = qrCode;
-      link.download = `${user?.merchant?.name || 'merchant'}-qr-code.png`;
+      // Use card_name in filename to make it clear which card this QR belongs to
+      const cardName = user?.merchant?.card_name || user?.merchant?.name || 'merchant';
+      const safeCardName = cardName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.download = `${safeCardName}-qr-code.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      showNotification('success', '✓ QR code downloaded successfully!', 3000);
+      showNotification('success', `✓ QR code for "${cardName}" downloaded successfully!`, 4000);
     } catch (err) {
       console.error('Error downloading QR code:', err);
       showNotification('error', 'Failed to download QR code');
@@ -526,8 +529,13 @@ function Dashboard() {
         <div className="qr-code-card">
           <div className="qr-code-header">
             <div>
-              <h3>Customer QR Code</h3>
-              <p>Customers scan this code to join your loyalty program</p>
+              <h3>Customer QR Code{user?.merchant?.card_name && ` for "${user.merchant.card_name}"`}</h3>
+              <p>Customers scan this code to join <strong>{user?.merchant?.card_name || user?.merchant?.name || 'this'}</strong> loyalty program</p>
+              {user?.merchant?.card_name && (
+                <p style={{ fontSize: '12px', color: '#ff6b35', marginTop: '4px' }}>
+                  ⚠️ Each card has its own unique QR code. Don't use QR codes from other cards!
+                </p>
+              )}
             </div>
             <div className="qr-code-actions">
               {qrCode && (
