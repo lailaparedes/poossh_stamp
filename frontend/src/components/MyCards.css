@@ -701,14 +701,39 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.logo-upload-section.dragging .upload-dropzone {
+  border-color: #667eea;
+  background-color: rgba(102, 126, 234, 0.05);
+  transform: scale(1.02);
+}
+
+.upload-dropzone {
+  padding: 1.5rem;
+  border: 2px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: white;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.drag-hint {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: #86868b;
+  font-weight: 400;
 }
 
 .btn-upload-logo {
   padding: 0.75rem 1.25rem;
-  border: 2px dashed rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-  background: white;
-  color: #1d1d1f;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;

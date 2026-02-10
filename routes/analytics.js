@@ -31,7 +31,7 @@ function setCache(cacheKey, data) {
 // Helper function to convert UTC date to local date string (YYYY-MM-DD)
 function toLocalDateString(dateString) {
   const date = new Date(dateString);
-  // Use local timezone, format as YYYY-MM-DD
+  // Use local timezone for display
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -199,10 +199,11 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
       customersByDay[day] = (customersByDay[day] || 0) + 1;
     });
 
-    // Fill in missing days with 0
+    // Fill in missing days with 0 (use local timezone)
     const customersChartData = [];
     for (let i = 30; i >= 0; i--) {
       const date = new Date();
+      date.setHours(0, 0, 0, 0); // Start of day in local time
       date.setDate(date.getDate() - i);
       const dateStr = toLocalDateString(date.toISOString());
       customersChartData.push({
@@ -228,15 +229,48 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
       stampsByDay[day] = (stampsByDay[day] || 0) + (stamp.amount || 0);
     });
 
-    // Fill in missing days with 0
+    // Fill in missing days with 0 (use local timezone)
     const stampsChartData = [];
     for (let i = 30; i >= 0; i--) {
       const date = new Date();
+      date.setHours(0, 0, 0, 0); // Start of day in local time
       date.setDate(date.getDate() - i);
       const dateStr = toLocalDateString(date.toISOString());
       stampsChartData.push({
         date: dateStr,
         count: stampsByDay[dateStr] || 0
+      });
+    }
+
+    // 7. Rewards redeemed per day (last 30 days)
+    const { data: redemptionsPerDayData, error: redemptionsChartError } = await supabase
+      .from('rewards')
+      .select('redeemed_at')
+      .eq('merchant_id', merchantId)
+      .eq('is_redeemed', true)
+      .not('redeemed_at', 'is', null)
+      .gte('redeemed_at', thirtyDaysAgo.toISOString())
+      .order('redeemed_at', { ascending: true });
+
+    if (redemptionsChartError) throw redemptionsChartError;
+
+    // Group by day
+    const redemptionsByDay = {};
+    redemptionsPerDayData?.forEach(reward => {
+      const day = toLocalDateString(reward.redeemed_at);
+      redemptionsByDay[day] = (redemptionsByDay[day] || 0) + 1;
+    });
+
+    // Fill in missing days with 0 (use local timezone)
+    const redemptionsChartData = [];
+    for (let i = 30; i >= 0; i--) {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0); // Start of day in local time
+      date.setDate(date.getDate() - i);
+      const dateStr = toLocalDateString(date.toISOString());
+      redemptionsChartData.push({
+        date: dateStr,
+        count: redemptionsByDay[dateStr] || 0
       });
     }
 
@@ -262,7 +296,8 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
       lastCalculated: analytics.last_calculated_at,
       merchantCardData: merchant,
       customersChart: customersChartData,
-      stampsChart: stampsChartData
+      stampsChart: stampsChartData,
+      redemptionsChart: redemptionsChartData
     };
 
     console.log('[Analytics] Dashboard stats:', dashboardData);

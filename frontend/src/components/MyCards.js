@@ -21,6 +21,7 @@ function MyCards() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // New card form state
   const [formData, setFormData] = useState({
@@ -192,6 +193,51 @@ function MyCards() {
     }
   };
 
+  const handleLogoFile = (file) => {
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image must be less than 2MB');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData({ ...formData, logo: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    handleLogoFile(file);
+  };
+
   if (loading && merchants.length === 0) {
     return (
       <>
@@ -347,38 +393,30 @@ function MyCards() {
                 Choose an emoji or upload your own logo image
               </small>
               
-              {/* Custom Logo Upload */}
-              <div className="logo-upload-section">
+              {/* Custom Logo Upload with Drag & Drop */}
+              <div 
+                className={`logo-upload-section ${isDragging ? 'dragging' : ''}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <input
                   type="file"
                   id="create-logo-upload"
                   accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
                   style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                      // Check file size (max 2MB)
-                      if (file.size > 2 * 1024 * 1024) {
-                        setError('Image must be less than 2MB');
-                        setTimeout(() => setError(null), 3000);
-                        return;
-                      }
-                      
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setFormData({ ...formData, logo: reader.result });
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
+                  onChange={(e) => handleLogoFile(e.target.files[0])}
                 />
-                <button
-                  type="button"
-                  className="btn-upload-logo"
-                  onClick={() => document.getElementById('create-logo-upload').click()}
-                >
-                  Upload Custom Logo
-                </button>
+                <div className="upload-dropzone">
+                  <button
+                    type="button"
+                    className="btn-upload-logo"
+                    onClick={() => document.getElementById('create-logo-upload').click()}
+                  >
+                    📁 Upload Custom Logo
+                  </button>
+                  <p className="drag-hint">or drag and drop an image here</p>
+                </div>
                 
                 {/* Logo Preview */}
                 {formData.logo && formData.logo.startsWith('data:image') && (

@@ -13,12 +13,14 @@ function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [newCardsData, setNewCardsData] = useState([]);
   const [stampActivityData, setStampActivityData] = useState([]);
+  const [redemptionsData, setRedemptionsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [qrCode, setQrCode] = useState(null);
   const [generatingQr, setGeneratingQr] = useState(false);
   const [notification, setNotification] = useState(null); // { type: 'success' | 'error' | 'warning', message: string }
   const [showEditForm, setShowEditForm] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [editFormData, setEditFormData] = useState({
     businessName: '',
     cardName: '',
@@ -65,6 +67,7 @@ function Dashboard() {
       // Use chart data from dashboard response
       setNewCardsData(data.customersChart || []);
       setStampActivityData(data.stampsChart || []);
+      setRedemptionsData(data.redemptionsChart || []);
 
       // Update merchant info if available from analytics
       if (data.merchantCardData) {
@@ -234,6 +237,49 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogoFile = (file) => {
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      showNotification('error', 'Please upload an image file');
+      return;
+    }
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showNotification('error', 'Image must be less than 2MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setEditFormData({ ...editFormData, logo: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files[0];
+    handleLogoFile(file);
   };
 
   if (loading) {
@@ -409,37 +455,30 @@ function Dashboard() {
                     Choose an emoji or upload your own logo image
                   </small>
                   
-                  {/* Custom Logo Upload */}
-                  <div className="logo-upload-section">
+                  {/* Custom Logo Upload with Drag & Drop */}
+                  <div 
+                    className={`logo-upload-section ${isDragging ? 'dragging' : ''}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
                     <input
                       type="file"
                       id="logo-upload"
                       accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
                       style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          // Check file size (max 2MB)
-                          if (file.size > 2 * 1024 * 1024) {
-                            showNotification('error', 'Image must be less than 2MB');
-                            return;
-                          }
-                          
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setEditFormData({ ...editFormData, logo: reader.result });
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
+                      onChange={(e) => handleLogoFile(e.target.files[0])}
                     />
-                    <button
-                      type="button"
-                      className="btn-upload-logo"
-                      onClick={() => document.getElementById('logo-upload').click()}
-                    >
-                      Upload Custom Logo
-                    </button>
+                    <div className="upload-dropzone">
+                      <button
+                        type="button"
+                        className="btn-upload-logo"
+                        onClick={() => document.getElementById('logo-upload').click()}
+                      >
+                        📁 Upload Custom Logo
+                      </button>
+                      <p className="drag-hint">or drag and drop an image here</p>
+                    </div>
                     
                     {/* Logo Preview */}
                     {editFormData.logo && editFormData.logo.startsWith('data:image') && (
@@ -668,6 +707,54 @@ function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <p className="no-data">No stamp data available yet</p>
+            )}
+          </div>
+
+          <div className="chart-card">
+            <h3>Rewards Redeemed Per Day (Last 30 Days)</h3>
+            {redemptionsData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={redemptionsData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRedemptions" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#48bb78" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#38a169" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 0, 0, 0.06)" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    stroke="#86868b"
+                    style={{ fontSize: '12px' }}
+                  />
+                  <YAxis 
+                    stroke="#86868b"
+                    style={{ fontSize: '12px' }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    labelFormatter={(date) => new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    formatter={(value) => [value, 'Redemptions']}
+                    contentStyle={{
+                      background: 'white',
+                      border: '1px solid rgba(0, 0, 0, 0.12)',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="#48bb78" 
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorRedemptions)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="no-data">No redemption data available yet</p>
             )}
           </div>
         </div>
