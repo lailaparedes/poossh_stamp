@@ -314,7 +314,7 @@ function Dashboard() {
               )}
             </div>
             <div className="merchant-info">
-              <h2>{dashboardData?.merchantName || user?.merchant?.name || 'Loading...'}</h2>
+              <h2>{dashboardData?.merchantName || user?.merchant?.card_name || user?.merchant?.name || 'Loading...'}</h2>
               <p>{user?.merchant?.category || 'Loyalty Card'}</p>
             </div>
           </div>

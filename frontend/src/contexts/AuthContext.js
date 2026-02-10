@@ -78,16 +78,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateToken = async (newToken) => {
+    console.log('🟢 [AuthContext] updateToken called');
+    console.log('🟢 [AuthContext] New token (first 50 chars):', newToken.substring(0, 50));
+    
     localStorage.setItem('merchantToken', newToken);
     axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
     setToken(newToken);
     
     // Verify and update user data with new token
     try {
+      console.log('🟢 [AuthContext] Calling /api/auth/verify...');
       const response = await axios.get('/api/auth/verify');
+      console.log('🟢 [AuthContext] Verify response:', response.data);
+      console.log('🟢 [AuthContext] New user.merchant:', response.data.data.user.merchant?.id, response.data.data.user.merchant?.name);
       setUser(response.data.data.user);
     } catch (error) {
-      console.error('Token verification failed:', error);
+      console.error('❌ [AuthContext] Token verification failed:', error);
     }
   };
 

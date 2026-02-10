@@ -485,7 +485,10 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
       .eq('is_active', true)
       .single();
 
+    console.log('🔍 Fetched merchant:', merchant?.name, 'ID:', merchant?.id);
+
     if (fetchError || !merchant) {
+      console.log('❌ Merchant fetch error:', fetchError);
       return res.status(404).json({
         success: false,
         error: 'Merchant not found or does not belong to you'
@@ -493,7 +496,7 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     }
 
     // Update user's active merchant
-    console.log('Updating user merchant_id in database...');
+    console.log('🔄 Updating user merchant_id in database to:', merchantId, '(' + merchant.name + ')');
     const { data: updateData, error: updateError } = await supabase
       .from('portal_merchant_users')
       .update({ merchant_id: merchantId })
@@ -509,7 +512,7 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     }
 
     console.log('✅ Database updated:', updateData);
-    console.log('✅ Active merchant changed from', req.merchant.merchantId, 'to', merchantId);
+    console.log('✅ Active merchant changed from', req.merchant.merchantId, 'to', merchantId, '(' + merchant.name + ')');
     
     // Generate new JWT token with updated merchantId
     const jwt = require('jsonwebtoken');
@@ -524,7 +527,8 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
     
     const newToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' });
     
-    console.log('✅ New JWT token generated with payload:', tokenPayload);
+    console.log('🎫 New JWT token generated with payload:', tokenPayload);
+    console.log('🎫 Token will return merchant:', merchant.name, 'ID:', merchantId);
     console.log('Token preview:', newToken.substring(0, 50) + '...');
     
     // Update session in database with new token
@@ -553,7 +557,8 @@ router.post('/set-active/:merchantId', authenticateMerchant, async (req, res) =>
       console.log('✅ Session updated in database');
     }
     
-    console.log('=== SET ACTIVE MERCHANT SUCCESS ===\n');
+    console.log('✅ SET ACTIVE MERCHANT SUCCESS - Returning merchant:', merchant.name, 'ID:', merchant.id);
+    console.log('=== END SET ACTIVE MERCHANT ===\n');
     
     res.json({
       success: true,

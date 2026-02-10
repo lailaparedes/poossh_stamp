@@ -107,14 +107,21 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', user.id)
-      .limit(1);
+    // Get the active merchant card for this user (using merchant_id from user table)
+    let merchantCard = null;
+    if (user.merchant_id) {
+      const { data: merchantCards } = await supabase
+        .from('merchant_cards')
+        .select('id, name, card_name, logo, category, color, qr_code, stamps_required')
+        .eq('id', user.merchant_id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      merchantCard = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+      console.log('🎯 [Login] Loaded active merchant:', merchantCard?.name, 'ID:', merchantCard?.id);
+    }
     
-    user.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+    user.merchant = merchantCard;
     console.log('Merchant loaded:', user.merchant?.name || 'NO MERCHANT');
 
     // Verify password
@@ -201,14 +208,21 @@ router.get('/verify', async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', user.id)
-      .limit(1);
+    // Get the active merchant card for this user (using merchant_id from user table)
+    let merchantCard = null;
+    if (user.merchant_id) {
+      const { data: merchantCards } = await supabase
+        .from('merchant_cards')
+        .select('id, name, card_name, logo, category, color, qr_code, stamps_required')
+        .eq('id', user.merchant_id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      merchantCard = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+      console.log('🎯 [Verify] Loaded active merchant:', merchantCard?.name, 'ID:', merchantCard?.id);
+    }
     
-    user.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+    user.merchant = merchantCard;
 
     res.json({
       success: true,
@@ -360,14 +374,21 @@ router.put('/profile', authenticateMerchant, async (req, res) => {
       });
     }
 
-    // Get merchant cards created by this user (schema v2.0)
-    const { data: merchantCards } = await supabase
-      .from('merchant_cards')
-      .select('id, name, logo, category, color, qr_code')
-      .eq('created_by_user_id', updatedUser.id)
-      .limit(1);
+    // Get the active merchant card for this user (using merchant_id from user table)
+    let merchantCard = null;
+    if (updatedUser.merchant_id) {
+      const { data: merchantCards } = await supabase
+        .from('merchant_cards')
+        .select('id, name, card_name, logo, category, color, qr_code, stamps_required')
+        .eq('id', updatedUser.merchant_id)
+        .eq('is_active', true)
+        .limit(1);
+      
+      merchantCard = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+      console.log('🎯 [Profile] Loaded active merchant:', merchantCard?.name, 'ID:', merchantCard?.id);
+    }
     
-    updatedUser.merchant = merchantCards && merchantCards.length > 0 ? merchantCards[0] : null;
+    updatedUser.merchant = merchantCard;
 
     // Generate new token with updated info
     const tokenPayload = {

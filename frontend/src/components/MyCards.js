@@ -162,23 +162,32 @@ function MyCards() {
 
   const handleSetActive = async (merchantId) => {
     try {
+      console.log('🔵 [MyCards] Clicked on card with ID:', merchantId);
+      console.log('🔵 [MyCards] Current user.merchant:', user?.merchant?.id, user?.merchant?.name);
+      
       const response = await axios.post(`/api/merchants/set-active/${merchantId}`);
+      console.log('🔵 [MyCards] Set-active response:', response.data);
       
       // If we got a new token, update it properly through AuthContext
       if (response.data.data?.token) {
+        console.log('🔵 [MyCards] Updating token...');
         await updateToken(response.data.data.token);
+        console.log('🔵 [MyCards] Token updated successfully');
         
-        console.log('Token updated, navigating to dashboard for merchant:', merchantId);
+        // Force a small delay to ensure token is updated
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        console.log('🔵 [MyCards] Navigating to dashboard for merchant:', merchantId);
         
         // Navigate to dashboard (no page reload needed since token is already updated)
         navigate('/dashboard');
       } else {
-        console.warn('No token in response, using fallback redirect');
+        console.warn('⚠️ [MyCards] No token in response, using fallback redirect');
         // Fallback if no token returned
         navigate('/dashboard');
       }
     } catch (err) {
-      console.error('Error setting active card:', err);
+      console.error('❌ [MyCards] Error setting active card:', err);
       alert(err.response?.data?.error || 'Failed to set active card');
     }
   };
