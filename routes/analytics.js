@@ -258,7 +258,7 @@ router.get('/dashboard', authenticateMerchant, async (req, res) => {
       redemptionRate: analytics.total_rewards_earned > 0 
         ? Math.round((analytics.total_rewards_redeemed / analytics.total_rewards_earned) * 100) 
         : 0,
-      merchantName: merchant?.card_name || merchant?.name || analytics.merchant_name, // Use card_name first
+      merchantName: merchant?.name || analytics.merchant_name, // Use business name (not card_name)
       lastCalculated: analytics.last_calculated_at,
       merchantCardData: merchant,
       customersChart: customersChartData,
